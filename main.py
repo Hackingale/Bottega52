@@ -1,6 +1,7 @@
 import google.generativeai as ai
 import functions as f
 import config
+import LLM1
 
 def response(input, context, model):
     prompt = f.prompt_creation(input, context)
