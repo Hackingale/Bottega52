@@ -1,4 +1,41 @@
+import json
+
 import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+
+
+def extract_data_from_website(url):
+    try:
+        url = 'https://www.' + url
+        response = requests.get(url)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+            # Extract all the text from the HTML and strip unnecessary spaces
+            all_text = '\n'.join(line.strip() for line in soup.get_text(separator='\n').splitlines() if line.strip())
+
+            return all_text
+        else:
+            return None
+    except Exception as e:
+        print("An error occurred while extracting data from", url)
+        print(e)
+        return None
+
+def create_json_with_website_data(company_names, output_file):
+    data = {}
+    for company_name in company_names[:10]:
+        extracted_data = extract_data_from_website(company_name)
+        if extracted_data:
+            data[company_name] = extracted_data
+
+    try:
+        with open(output_file, 'w') as json_file:
+            json.dump(data, json_file, indent=4)
+        print("JSON file with website data created:", output_file)
+    except Exception as e:
+        print("An error occurred while writing JSON file:", e)
 
 def contextexcel_to_text(xlsx_file):
     # Read the CSV file into a pandas DataFrame
