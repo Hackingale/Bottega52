@@ -89,15 +89,6 @@ def prompt_creation(input, context):
 # Call the function and store the return value
 return_string = prompt_creation("InputData.xlsx", "Categories.xlsx")
 
-# Specify the file path
-file_path = "output.txt"
-
-# Write the return string to a text file
-with open(file_path, "w") as file:
-    file.write(return_string)
-
-print("Return string has been written to", file_path)
-
 def contextp_test(context):
     prompt = "I will provide you a list of Players in the context of the real estate market. Each player is characterized by these following attributes: Player (the role of the figure in the market), Can they buy the solution? (are they able to buy the house/estate), Can they influence the buying decision?, Notes(additional  info regarding the player's role)\n"
     prompt += contextexcel_to_text(context) + "\n"
