@@ -1,4 +1,5 @@
-import google.generativeai as ai
-import functions as f
-import config
-import LLM1 as ai
+from HTML import hit
+
+if __name__ == '__main__':
+    hit.app.run(debug=True)
+
