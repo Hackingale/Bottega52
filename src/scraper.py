@@ -45,7 +45,7 @@ def scrape_it(company_url, extracted_values, company_name):
 
 
 # Function to scrape the web page and extract the text content from the HTML
-# todo - deal with sites not reachable from the simple comapnyName.com
+# todo - deal with sites not reachable from the simple companyName.com
 def web_scraper(file):
     # Read the Excel file
     df = pd.read_excel(file, header=None, usecols=[1, 3], skiprows=[0], names=['Contact E-mail', 'Company'])
@@ -81,7 +81,7 @@ def web_scraper(file):
                     company_url = cleaned_domain
 
             # scraping various ways - todo make it cleaner this is disgusting
-            if scrape_es(company_url,extracted_values, company_name) == 1:
+            if scrape_es(company_url, extracted_values, company_name) == 1:
                 if scrape_com(company_url, extracted_values, company_name) == 1:
                     if scrape_it(company_url, extracted_values, company_name) == 1:
                         print("Failed to fetch:", company_name)
