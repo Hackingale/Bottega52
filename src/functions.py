@@ -1,7 +1,45 @@
 import json
+import unicodedata
+
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+import re
+
+
+# Function to remove text after the last underscore in the company name
+def remove_after_underscore(company_name):
+    # Find the last underscore in the company name
+    last_underscore_index = company_name.rfind('_')
+
+    # Check if an underscore was found
+    if last_underscore_index != -1:
+        # Remove the text after the last underscore
+        cleaned_name = company_name[:last_underscore_index]
+    else:
+        # No underscore found, return the original name
+        cleaned_name = company_name
+
+    return cleaned_name
+
+
+# company name cleaning
+def company_name_cleaning(company_name):
+    # Remove accents
+    text = unicodedata.normalize('NFKD', company_name).encode('ASCII', 'ignore').decode('utf-8')
+    # Remove special characters except letters and numbers
+    cleaned_name = re.sub(r'[^a-zA-Z0-9]', '', text)
+    # Convert to lowercase
+    cleaned_name = cleaned_name.lower()
+    return cleaned_name
+
+
+def domain_cleaning(email):
+    # Split the email address at '@' to get the domain part
+    domain_part = email.split('@')[-1]
+    # Split the domain part at '.' and take the first part
+    cleaned_domain = domain_part.split('.')[0]
+    return cleaned_domain
 
 
 def extract_data_from_website(url):
@@ -76,6 +114,7 @@ def inputexcel_to_text(xlsx_file):
     # Print the result list (or do whatever you want with it)
     return result
 
+
 def prompt_creation(input, context):
     prompt = "I will provide you a list of Players in the context of the real estate market. Each player is characterized by these following attributes: Player (the role of the figure in the market), Can they buy the solution? (are they able to buy the house/estate), Can they influence the buying decision?, Notes(additional  info regarding the player's role)\n"
     prompt += contextexcel_to_text(context) + "\n"
@@ -87,7 +126,7 @@ def prompt_creation(input, context):
     return prompt
 
 # Call the function and store the return value
-return_string = prompt_creation("InputData.xlsx", "Categories.xlsx")
+return_string = prompt_creation("../xlsx files/InputData.xlsx", "../xlsx files/Categories.xlsx")
 
 def contextp_test(context):
     prompt = "I will provide you a list of Players in the context of the real estate market. Each player is characterized by these following attributes: Player (the role of the figure in the market), Can they buy the solution? (are they able to buy the house/estate), Can they influence the buying decision?, Notes(additional  info regarding the player's role)\n"
