@@ -97,9 +97,17 @@ def contextexcel_to_text(xlsx_file):
 
     return context_prompt
 
+def extract_name_or_email(row):
+    if row['Company / Account'].startswith('_'):
+        return domain_cleaning(str(row['Contact E-mail']))
+    else:
+        return row['Company / Account']
+
 def countemployees(input):
     # Read the Excel file into a DataFrame
     df = pd.read_excel(input)
+
+    df['Company / Account'] = df.apply(extract_name_or_email, axis=1)
 
     # Extract the company name from the 'Company name' column
     df['Company / Account'] = df['Company / Account'].str.split('_').str[0]
@@ -109,6 +117,9 @@ def countemployees(input):
 
     # Remove trailing spaces after the company name
     df['Company / Account'] = df['Company / Account'].str.strip()
+
+    first_element = df.iloc[0, 0]
+    print(first_element)
 
     # Group the data by company name and get the size of each group (count of employees)
     result_df = df.groupby('Company / Account').size().reset_index(name='Number of Employees')
@@ -145,8 +156,8 @@ def prompt_creation(input, context):
     prompt += "Based on the information provided using the list of players and the company, please generate a text that reports the following information: Company, #Contacts, Type of Company, Sub-type, Buyer (yes/no), Influencer (yes/no), Target Market (true/false), Website reachable (true/false)\n"
     return prompt
 
-# Call the function and store the return value
-return_string = prompt_creation("InputData.xlsx", "Categories.xlsx")
+    # Call the function and store the return value
+    return_string = prompt_creation("InputData.xlsx", "Categories.xlsx")
 
 def contextp_test(context):
     prompt = "I will provide you a list of Players in the context of the real estate market. Each player is characterized by these following attributes: Player (the role of the figure in the market), Can they buy the solution? (are they able to buy the house/estate), Can they influence the buying decision?, Notes(additional  info regarding the player's role)\n"
