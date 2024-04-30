@@ -1,5 +1,5 @@
-from HTML import hit
+from HTML import fileupload
 
 if __name__ == '__main__':
-    hit.app.run(debug=True)
+    fileupload.app.run(debug=True)
 

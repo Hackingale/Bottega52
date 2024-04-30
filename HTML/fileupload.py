@@ -17,9 +17,9 @@ def success():
         test_set_file = request.files['test_set_file']
 
         # Save each file with a unique name
-        input_file.save("InputData.xlsx")
-        context_file.save("ContextData.xlsx")
-        test_set_file.save("TestSetData.xlsx")
+        input_file.save("HTML/uploaded/InputData.xlsx")
+        context_file.save("HTML/uploaded/ContextData.xlsx")
+        test_set_file.save("HTML/uploaded/TestSetData.xlsx")
 
         return render_template("Acknowledgement.html",
                                input_file_name="InputData.xlsx",
