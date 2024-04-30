@@ -1,9 +1,9 @@
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-from functions import company_name_cleaning
-from functions import domain_cleaning
-from functions import remove_after_underscore
+from src.functions import company_name_cleaning
+from src.functions import domain_cleaning
+from src.functions import remove_after_underscore
 
 # MAKE SURE ALL DEBUG COMMENTS ARE DEACTIVATED ONCE RUNNING FINAL VERSION
 
