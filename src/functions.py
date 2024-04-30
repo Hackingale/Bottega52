@@ -1,6 +1,5 @@
 import json
 import unicodedata
-
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
@@ -162,3 +161,62 @@ def prompt_creation(input, context):
 def contextp_test(context):
     prompt = "I will provide you a list of Players in the context of the real estate market. Each player is characterized by these following attributes: Player (the role of the figure in the market), Can they buy the solution? (are they able to buy the house/estate), Can they influence the buying decision?, Notes(additional  info regarding the player's role)\n"
     prompt += contextexcel_to_text(context) + "\n"
+
+
+def create_influencers(file):
+    influencers = set()
+    df = pd.read_excel(file)
+    for index, row in df.iterrows():
+        if row['Can they influence the buying decision?'] == 'YES':
+            influencers.add(row['Player'])
+
+    return influencers
+
+
+def create_targets(file):
+    targets = set()
+    df = pd.read_excel(file)
+    for index, row in df.iterrows():
+        if row['Is Target'] == 'YES':
+            targets.add(row['Player'])
+
+    return targets
+
+
+def create_buyers(file):
+    buyers = set()
+    df = pd.read_excel(file)
+    for index, row in df.iterrows():
+        if row['Can they buy the solution?'] == 'YES':
+            buyers.add(str(row['Player']))
+
+    return buyers
+
+
+def file_sguccer(buyers, targets, influencers, df):
+
+    # Create a new DataFrame with the required columns
+    df['Sub-Type'] = 'Constructor'
+    df['Buyer'] = 'NO'
+    df['Influencer'] = 'NO'
+    df['Target'] = 'NO'
+    df['Website ok'] = 'NO'
+
+    # iterate over the "Categories" column and check if the company is a buyer, target, or influencer
+    for index, row in df.iterrows():
+        company = row['Sub-Type']
+        if company in buyers:
+            df.at[index, 'Buyer'] = 'YES'
+        else:
+            df.at[index, 'Buyer'] = 'NO'
+        if company in targets:
+            df.at[index, 'Target'] = 'YES'
+        else:
+            df.at[index, 'Target'] = 'NO'
+        if company in influencers:
+            df.at[index, 'Influencer'] = 'YES'
+        else:
+            df.at[index, 'Influencer'] = 'NO'
+
+        df.to_excel('output.xlsx', index=False)
+
