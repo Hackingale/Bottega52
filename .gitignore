@@ -185,7 +185,7 @@ fabric.properties
 # .idea
 InputData.xlsx
 Manual Classification.xlsx
-LLM1.py
+src/LLM1.py
 *.txt
 Categories.xlsx
 employee_counts.xlsx
