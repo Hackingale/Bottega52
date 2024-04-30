@@ -187,5 +187,4 @@ InputData.xlsx
 Manual Classification.xlsx
 src/LLM1.py
 *.txt
-Categories.xlsx
-employee_counts.xlsx
+*.xlsx
