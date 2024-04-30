@@ -1,5 +1,5 @@
 from gpt4all import GPT4All
-import functions as func
+import src.functions as func
 import getpass
 
 #get current user function
