@@ -1,9 +1,19 @@
+from __future__ import absolute_import
+from __future__ import division, print_function, unicode_literals
+
 import json
 import unicodedata
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import re
+
+from deep_translator import GoogleTranslator
+from sumy.parsers.html import HtmlParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.lsa import LsaSummarizer as Summarizer
+from sumy.nlp.stemmers import Stemmer
+from sumy.utils import get_stop_words
 
 
 # Function to remove text after the last underscore in the company name
@@ -114,11 +124,28 @@ def countemployees(input):
     result_df = df.groupby('Company / Account').size().reset_index(name='Number of Employees')
 
     # Save the result to an Excel file
-    #result_df.to_excel('employee_counts.xlsx', index=False)
+    result_df.to_excel('../xlsx files/employee_counts.xlsx', index=False)
 
     #print("Excel file generated successfully.")
 
     return result_df
+
+# Function to summarize the text content of a given URL
+def summarize_text(url):
+    parser = HtmlParser.from_url(url, Tokenizer('english'))
+    stemmer = Stemmer('english')
+    summarizer = Summarizer(stemmer)
+    summarizer.stop_words = get_stop_words('english')
+    text = ""
+    for sentence in summarizer(parser.document, 10):
+        text += str(sentence) + " \n"
+    return text
+
+
+# Function to translate text to a target language
+def translate_text(text, target_language):
+    translation = GoogleTranslator(source='auto', target=target_language).translate(text)
+    return translation
 
 
 def inputexcel_to_text(xlsx_file):
@@ -172,6 +199,7 @@ def create_buyers(file):
     return buyers
 
 
+# todo make it modular
 def file_sguccer(buyers, targets, influencers, df):
 
     # Create a new DataFrame with the required columns
@@ -197,5 +225,5 @@ def file_sguccer(buyers, targets, influencers, df):
         else:
             df.at[index, 'Influencer'] = 'NO'
 
-        df.to_excel('output.xlsx', index=False)
+        df.to_excel('../xlsx files/output.xlsx', index=False)
 

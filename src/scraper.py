@@ -1,5 +1,9 @@
+from __future__ import absolute_import
+from __future__ import division, print_function, unicode_literals
+
 import requests
 import pandas as pd
+import functions as f
 from bs4 import BeautifulSoup
 from src.functions import company_name_cleaning
 from src.functions import domain_cleaning
@@ -97,8 +101,11 @@ def status_code_ok(response, extracted_values, company_name):
     # Parse the HTML content of the web page
     soup = BeautifulSoup(response.content, 'html.parser')
 
+    # Extract the body of the parsed HTML
+    body = soup.body
+
     # Extract only the text from the parsed HTML
-    text = ' '.join(line.strip() for line in soup.get_text().splitlines() if line.strip())
+    text = ' '.join(line.strip() for line in body.get_text().splitlines() if line.strip())
 
     # Save the extracted text
     extracted_values[company_name] = text
@@ -107,5 +114,12 @@ def status_code_ok(response, extracted_values, company_name):
     print(company_name)
 
 
+# TEST FUNCTION
+def test_scrape(url):
+    summary = f.summarize_text(url)
+    translation = f.translate_text(summary, 'en')
+    print(translation)
+
+
 # DEBUG only
-web_scraper("../xlsx files/InputData.xlsx")
+# test_scrape("https://acr.es")
