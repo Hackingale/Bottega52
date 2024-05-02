@@ -185,6 +185,5 @@ fabric.properties
 # .idea
 InputData.xlsx
 Manual Classification.xlsx
-src/LLM1.py
 *.txt
 *.xlsx
