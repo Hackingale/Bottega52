@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
 
-import requests
 import pandas as pd
 import functions as f
 from bs4 import BeautifulSoup
@@ -14,42 +13,40 @@ from src.functions import remove_after_underscore
 
 def scrape_es(company_url, extracted_values, company_name):
     url = 'https://www.' + company_url + '.es'  # Replace example.com with your base URL
-
-    try:
-        response = requests.get(url, timeout=20)
-    except requests.exceptions.RequestException as e:
-        print("Failed to fetch:", url, "Error:", e)
+    extracted = f.summarize_text(url, 'spanish')
+    if extracted == 1:
+        extracted_values[company_name] = 'NULL'
         return 1
-    extracted_values[company_name] = response
+    else:
+        extracted_values[company_name] = extracted
     return 0
 
 
 def scrape_com(company_url, extracted_values, company_name):
     url = 'https://www.' + company_url + '.com'  # Replace example.com with your base URL
-
-    try:
-        response = requests.get(url, timeout=20)
-    except requests.exceptions.RequestException as e:
-        print("Failed to fetch:", url, "Error:", e)
+    extracted = f.summarize_text(url, 'english')
+    if extracted == 1:
+        extracted_values[company_name] = 'NULL'
         return 1
-    extracted_values[company_name] = response
+    else:
+        extracted_values[company_name] = extracted
     return 0
 
 
 def scrape_it(company_url, extracted_values, company_name):
     url = 'https://www.' + company_url + '.it'  # Replace example.com with your base URL
-
-    try:
-        response = requests.get(url, timeout=20)
-    except requests.exceptions.RequestException as e:
-        print("Failed to fetch:", url, "Error:", e)
+    extracted = f.summarize_text(url, 'italian')
+    if extracted == 1:
+        extracted_values[company_name] = 'NULL'
         return 1
-    extracted_values[company_name] = response
+    else:
+        extracted_values[company_name] = extracted
     return 0
 
 
 # Function to scrape the web page and extract the text content from the HTML
 # todo - deal with sites not reachable from the simple companyName.com
+# input: InputData file
 def web_scraper(file):
     # Read the Excel file
     df = pd.read_excel(file, header=None, usecols=[1, 3], skiprows=[0], names=['Contact E-mail', 'Company'])
@@ -63,11 +60,12 @@ def web_scraper(file):
         # debug
         scraped_entries += 1
 
-        print("#" * 100)
+        company_name = company_name.split('_').str[0]
+        company_name = company_name.lower()
+        company_name = company_name.strip()
 
+        # company already found
         if company_name in extracted_values:
-            print("Company already extracted: " + company_name)
-            print("Scraped entries:", scraped_entries)
             continue
 
         if pd.notnull(company_name):  # Check if company name is not null
@@ -88,13 +86,9 @@ def web_scraper(file):
             if scrape_es(company_url, extracted_values, company_name) == 1:
                 if scrape_com(company_url, extracted_values, company_name) == 1:
                     if scrape_it(company_url, extracted_values, company_name) == 1:
-                        print("Failed to fetch:", company_name)
-                        print("Scraped entries:", scraped_entries)
-                        print("#" * 100)
                         continue
 
-        print("Scraped entries:", scraped_entries)
-        print("#" * 100)
+    return extracted_values # company -> testo/NULL
 
 
 def status_code_ok(response, extracted_values, company_name):
@@ -116,7 +110,7 @@ def status_code_ok(response, extracted_values, company_name):
 
 # TEST FUNCTION
 def test_scrape(url):
-    summary = f.summarize_text(url)
+    summary = f.summarize_text(url, 'english')
     translation = f.translate_text(summary, 'en')
     print(translation)
 

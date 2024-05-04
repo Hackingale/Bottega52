@@ -1,37 +1,71 @@
-from LLM1 import ConversationHandler, get_external_input
+from LLM1 import ConversationHandler
 import time
+import src.functions as f
+import scraper as scr
 '''if __name__ == '__main__':
     fileupload.app.run(debug=True)
-'''
-'''
-import src.functions as f
-
-df = f.countemployees('/Users/marco/Developer/GitHub/Botteg52/xlsx files/InputData.xlsx')
-
-f.file_sguccer(f.create_buyers('/Users/marco/Developer/GitHub/Botteg52/xlsx files/Categories.xlsx'), f.create_targets('/Users/marco/Developer/GitHub/Botteg52/xlsx files/Categories.xlsx'), f.create_influencers('/Users/marco/Developer/GitHub/Botteg52/xlsx files/Categories.xlsx'), df)
+f.file_initializer(f.create_buyers('/Users/marco/Developer/GitHub/Botteg52/xlsx files/Categories.xlsx'), f.create_targets('/Users/marco/Developer/GitHub/Botteg52/xlsx files/Categories.xlsx'), f.create_influencers('/Users/marco/Developer/GitHub/Botteg52/xlsx files/Categories.xlsx'), df)
 
 '''
+
+#TODO Choosing model path and change path of the model
 #model_path = "/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf"
+#model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/orca-2-13b.Q4_0.gguf'
+
 
 model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
 
-#model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/orca-2-13b.Q4_0.gguf'
 
-handler = ConversationHandler(model_path)
-handler.start()
+buyers = f.create_buyers('../HTML/uploaded/InputData.xlsx')
+targets = f.create_targets('../HTML/uploaded/InputData.xlsx')
+influencers = f.create_influencers('../HTML/uploaded/InputData.xlsx')
 
-time.sleep(2)
+df = f.countemployees('../HTML/uploaded/InputData.xlsx')    #Company name and number of employees
+
+df = f.file_initializer(buyers, targets, influencers, df) #Company name, number of employees, Buyer, Influencer, Target
+
+companies = scr.web_scraper('../HTML/uploaded/InputData.xlsx') # create a dictionary < company, text / 'null' >
+
+handler = ConversationHandler(model_path)     #just make sure to parse the context file before doing this operation otherwise it will have no file
+handler.start(companies)
+
+
+
+
+company_keys = list(companies.keys())
+index = 0
+time.sleep(2) #TODO prova a rimuovere questo
 while True:
     time.sleep(0.5)
     handler.lock.acquire()
-    prompt = input("Enter a prompt: ")
-    user_input = get_external_input(prompt)
-    if(user_input == "exit"):
+    description = ''
+    company = ''
+    company = company_keys[index]
+    description = companies.get(company)
+    index += 1
+    if(description == 'NULL'):
+        continue
+    #prompt = input("Enter a prompt: ")   #Answer with only one word by telling me just the player category of this Company: {dict.company}, using this description: {dict.text}
+    prompt = company + '*Answer with only one word by telling me just the player category of this Company: ' + company + ', using this description: ' + description
+    if(index >= len(company_keys)):
+        handler.lock.release()
+        handler.stop()
+        break;
+    if(prompt == "exit"):
+        handler.lock.release()
         handler.stop()
         break
-    handler.send_input(user_input)
+    handler.send_input(prompt)
     handler.lock.release()
 
-#Answer with only one word by telling me just the player category of this Company: ACR, using this description: We innovate to adapt to new needs and respond to the challenges of the moment. We work to lead the transformation of construction towards an increasingly responsible, innovative and sustainable industry. We seek the satisfaction of our clients thanks to the Lean Construction model and a sense of radical collaboration that underpins our strategy, encompasses all our collaborators and is reflected in all our projects. We are looking for people with initiative, efficient and productive, who have a predisposition for teamwork, the ability to adapt to change and customer orientation. If you believe in collaborative, dynamic and innovative environments, look no further. ACR is your place! Designed by TdB Arquitectura, the B&B hotel in Tres Cantos, which we are building together with Casais, is advancing at a dizzying pace. And in just 14 days, in addition to the hybrid wood and concrete structure of the CREE Buildings system, the façade has also been assembled, with an exterior finish included with frames and glass, and the industrialized bathrooms and bathrooms are already distributed throughout the floors. piping kits for installations.
+for index, row in df.iterrows():
+    company = row['Company / Account']
+    category = companies.get(company)
+    if category != 'NULL':
+        df.at[index, 'Sub-Type'] = category
+        df.at[index, 'Website ok'] = 'YES'
+    else:
+        df.at[index, 'Sub- Type'] = 'NOT_VALID'
+        df.at[index, 'Website ok'] = 'NO'
 
-
+df.to_excel('/src/OutputData.xlsx', index=False)

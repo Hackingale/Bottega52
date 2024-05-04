@@ -11,6 +11,7 @@ import re
 from deep_translator import GoogleTranslator
 from sumy.parsers.html import HtmlParser
 from sumy.nlp.tokenizers import Tokenizer
+from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lsa import LsaSummarizer as Summarizer
 from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
@@ -105,9 +106,9 @@ def extract_name_or_email(row):
     else:
         return row['Company / Account']
 
-def countemployees(input):
+def countemployees(input_file):
     # Read the Excel file into a DataFrame
-    df = pd.read_excel(input)
+    df = pd.read_excel(input_file)
 
     df['Company / Account'] = df.apply(extract_name_or_email, axis=1)
 
@@ -130,23 +131,25 @@ def countemployees(input):
 
     return result_df
 
-# Function to summarize the text content of a given URL
-def summarize_text(url):
-    parser = HtmlParser.from_url(url, Tokenizer('english'))
-    stemmer = Stemmer('english')
-    summarizer = Summarizer(stemmer)
-    summarizer.stop_words = get_stop_words('english')
-    text = ""
-    for sentence in summarizer(parser.document, 10):
-        text += str(sentence)
-    return text
-
 
 # Function to translate text to a target language
 def translate_text(text, target_language):
     translation = GoogleTranslator(source='auto', target=target_language).translate(text)
     return translation
 
+
+def summarize_text(url, lan):
+    parser = HtmlParser.from_url(url, Tokenizer(lan))
+    stemmer = Stemmer(lan)
+    summarizer = Summarizer(stemmer)
+    summarizer.stop_words = get_stop_words(lan)
+    text = ""
+    for sentence in summarizer(parser.document, 10):
+        text += str(sentence) + " \n"
+        text += str(sentence)
+    if text == '':
+        return 1
+    return text
 
 def inputexcel_to_text(xlsx_file):
     df = countemployees(xlsx_file)
@@ -200,10 +203,10 @@ def create_buyers(file):
 
 
 # todo make it modular
-def file_sguccer(buyers, targets, influencers, df):
+def file_initializer(buyers, targets, influencers, df):
 
     # Create a new DataFrame with the required columns
-    df['Sub-Type'] = 'Constructor'
+    df['Sub-Type'] = ''
     df['Buyer'] = 'NO'
     df['Influencer'] = 'NO'
     df['Target'] = 'NO'
