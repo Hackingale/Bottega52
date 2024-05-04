@@ -14,7 +14,7 @@ from src.functions import remove_after_underscore
 def scrape_es(company_url, extracted_values, company_name):
     url = 'https://www.' + company_url + '.es'  # Replace example.com with your base URL
     extracted = f.summarize_text(url, 'spanish')
-    if extracted == 1:
+    if extracted is None:
         extracted_values[company_name] = 'NULL'
         return 1
     else:
@@ -25,7 +25,7 @@ def scrape_es(company_url, extracted_values, company_name):
 def scrape_com(company_url, extracted_values, company_name):
     url = 'https://www.' + company_url + '.com'  # Replace example.com with your base URL
     extracted = f.summarize_text(url, 'english')
-    if extracted == 1:
+    if extracted is None:
         extracted_values[company_name] = 'NULL'
         return 1
     else:
@@ -36,7 +36,7 @@ def scrape_com(company_url, extracted_values, company_name):
 def scrape_it(company_url, extracted_values, company_name):
     url = 'https://www.' + company_url + '.it'  # Replace example.com with your base URL
     extracted = f.summarize_text(url, 'italian')
-    if extracted == 1:
+    if extracted is None:
         extracted_values[company_name] = 'NULL'
         return 1
     else:

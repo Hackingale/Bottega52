@@ -42,7 +42,7 @@ class ConversationHandler:
             print(output) #to be removed
 
             prompt = func.contextexcel_to_text(
-                "../HTML/uploaded/Context Input - ContextData.xlsx") + "\nI will now provide you the company and its description. You have to tell me which kind of player the company is. Remember if you explicitly find the Player's category in the description it is probably the right player to choose and the right answer to give"
+                "../HTML/uploaded/ContextData.xlsx") + "\nI will now provide you the company and its description. You have to tell me which kind of player the company is. Remember if you explicitly find the Player's category in the description it is probably the right player to choose and the right answer to give"
             output = self.model.generate(prompt, max_tokens=4096)
             print(output) #to be removed
 

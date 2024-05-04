@@ -31,9 +31,6 @@ companies = scr.web_scraper('../HTML/uploaded/InputData.xlsx') # create a dictio
 handler = ConversationHandler(model_path)     #just make sure to parse the context file before doing this operation otherwise it will have no file
 handler.start(companies)
 
-
-
-
 company_keys = list(companies.keys())
 index = 0
 time.sleep(2) #TODO prova a rimuovere questo
