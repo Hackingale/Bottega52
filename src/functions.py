@@ -138,7 +138,7 @@ def summarize_text(url):
     summarizer.stop_words = get_stop_words('english')
     text = ""
     for sentence in summarizer(parser.document, 10):
-        text += str(sentence) + " \n"
+        text += str(sentence)
     return text
 
 
