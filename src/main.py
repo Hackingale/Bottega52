@@ -18,6 +18,7 @@ f.file_initializer(f.create_buyers('/Users/marco/Developer/GitHub/Botteg52/xlsx 
 # Marco
 model_path = '/Users/marco/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
 
+# todo this must be done after the category has been assigned
 buyers = f.create_buyers('../HTML/uploaded/ContextData.xlsx')
 targets = f.create_targets('../HTML/uploaded/ContextData.xlsx')
 influencers = f.create_influencers('../HTML/uploaded/ContextData.xlsx')

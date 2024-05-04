@@ -215,7 +215,7 @@ def file_initializer(buyers, targets, influencers, df):
 
     # iterate over the "Categories" column and check if the company is a buyer, target, or influencer
     for index, row in df.iterrows():
-        company = row['Sub-Type']
+        company = row['Company / Account']
         if company in buyers:
             df.at[index, 'Buyer'] = 'YES'
         else:
