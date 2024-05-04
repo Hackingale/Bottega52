@@ -31,11 +31,11 @@ class ConversationHandler:
     def _start_conversation(self):
         self.lock.acquire()
         with self.model.chat_session():
-            prompt = "I'll give you a list of Players. Please remember them because they're crucial; Each player has two attributes: Player (the role of the company in the market) and Notes (additional information about the player's role). I will provide you a company and its description. You have to tell me which kind of player the company is"
+            prompt = "I'll give you a list of Players. Please remember them because they're crucial; Each player has two attributes: Player (the role of the company in the market) and Notes (additional information about the player's role). I will provide you a company and its description. You have to tell me which kind of player the company is. You must not to come up with new players just use the ones I will provide"
             output = self.model.generate(prompt, max_tokens=4096)
             print(output) #to be removed
 
-            prompt = func.contextexcel_to_text("../xlsx files/Context Input - Categories.xlsx") + "I will now provide you the company and its description. You have to tell me which kind of player the company is. Remember if you explicitly find the Player's category in the description it is probably the right player to choose and the right answer to give"
+            prompt = func.contextexcel_to_text("../xlsx files/Context Input - Categories.xlsx") + "\nI will now provide you the company and its description. You have to tell me which kind of player the company is. Remember if you explicitly find the Player's category in the description it is probably the right player to choose and the right answer to give"
             output = self.model.generate(prompt, max_tokens=4096)
             print(output) #to be removed
 

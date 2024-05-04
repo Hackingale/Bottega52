@@ -122,4 +122,4 @@ def test_scrape(url):
 
 
 # DEBUG only
-# test_scrape("https://acr.es")
+test_scrape("https://grupoyoungretail.com")
