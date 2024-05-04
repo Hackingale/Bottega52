@@ -4,7 +4,7 @@ import src.functions as f
 import scraper as scr
 '''if __name__ == '__main__':
     fileupload.app.run(debug=True)
-f.file_initializer(f.create_buyers('/Users/marco/Developer/GitHub/Botteg52/xlsx files/Categories.xlsx'), f.create_targets('/Users/marco/Developer/GitHub/Botteg52/xlsx files/Categories.xlsx'), f.create_influencers('/Users/marco/Developer/GitHub/Botteg52/xlsx files/Categories.xlsx'), df)
+f.file_initializer(f.create_buyers('/Users/marco/Developer/GitHub/Botteg52/xlsx files/ContextData.xlsx'), f.create_targets('/Users/marco/Developer/GitHub/Botteg52/xlsx files/ContextData.xlsx'), f.create_influencers('/Users/marco/Developer/GitHub/Botteg52/xlsx files/ContextData.xlsx'), df)
 
 '''
 
@@ -12,13 +12,15 @@ f.file_initializer(f.create_buyers('/Users/marco/Developer/GitHub/Botteg52/xlsx 
 #model_path = "/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf"
 #model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/orca-2-13b.Q4_0.gguf'
 
+# Alessandro
+#model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
 
-model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
+# Marco
+model_path = '/Users/marco/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
 
-
-buyers = f.create_buyers('../HTML/uploaded/InputData.xlsx')
-targets = f.create_targets('../HTML/uploaded/InputData.xlsx')
-influencers = f.create_influencers('../HTML/uploaded/InputData.xlsx')
+buyers = f.create_buyers('../HTML/uploaded/ContextData.xlsx')
+targets = f.create_targets('../HTML/uploaded/ContextData.xlsx')
+influencers = f.create_influencers('../HTML/uploaded/ContextData.xlsx')
 
 df = f.countemployees('../HTML/uploaded/InputData.xlsx')    #Company name and number of employees
 

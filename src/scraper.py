@@ -49,18 +49,18 @@ def scrape_it(company_url, extracted_values, company_name):
 # input: InputData file
 def web_scraper(file):
     # Read the Excel file
-    df = pd.read_excel(file, header=None, usecols=[1, 3], skiprows=[0], names=['Contact E-mail', 'Company'])
+    df = pd.read_excel(file, header=None, usecols=[1, 3], skiprows=[0], names=['Contact E-mail', 'Company / Account'])
     scraped_entries = 0
 
     # hashMap to store all extracted values from a website in order to avoid multiple searches
     extracted_values = dict()
 
-    for email, company_name in zip(df['Contact E-mail'], df['Company']):
+    for email, company_name in zip(df['Contact E-mail'], df['Company / Account']):
 
         # debug
         scraped_entries += 1
 
-        company_name = company_name.split('_').str[0]
+        company_name = company_name.split('_')[0]
         company_name = company_name.lower()
         company_name = company_name.strip()
 

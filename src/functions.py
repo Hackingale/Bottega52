@@ -139,16 +139,17 @@ def translate_text(text, target_language):
 
 
 def summarize_text(url, lan):
-    parser = HtmlParser.from_url(url, Tokenizer(lan))
-    stemmer = Stemmer(lan)
-    summarizer = Summarizer(stemmer)
-    summarizer.stop_words = get_stop_words(lan)
-    text = ""
-    for sentence in summarizer(parser.document, 10):
-        text += str(sentence) + " \n"
-        text += str(sentence)
-    if text == '':
-        return 1
+    try:
+        parser = HtmlParser.from_url(url, Tokenizer(lan))
+        stemmer = Stemmer(lan)
+        summarizer = Summarizer(stemmer)
+        summarizer.stop_words = get_stop_words(lan)
+        text = ""
+        for sentence in summarizer(parser.document, 10):
+            text += str(sentence) + "\n"  # Assuming you want a new line after each sentence
+    except Exception as e:
+        print("Error:", e)
+        return None  # Return None or any other value indicating failure
     return text
 
 def inputexcel_to_text(xlsx_file):
