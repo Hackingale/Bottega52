@@ -12,6 +12,7 @@ class ConversationHandler:
         self.model = GPT4All(model_path, n_ctx=8192, allow_download=True)
         self.message_queue = queue.Queue()
         self.lock = threading.Lock()
+        self.stop = False
 
     def generate_response(self, prompt):
         with self.model.chat_session():
@@ -20,19 +21,18 @@ class ConversationHandler:
 
     def return_lock(self):
         return self.lock
+    def stop(self):
+        self.stop = True
 
-    def start(self, companies):
-        self.thread = threading.Thread(target=self._start_conversation(companies))
+
+    def start(self, dict):
+        self.thread = threading.Thread(target=self._start_conversation, args=(dict,))
         self.thread.start()
 
-    def parse_category(text):
+    def parse_category(self, text):
         pattern = r'\*\*(.*?)\*\*'
         matches = re.findall(pattern, text)
         return matches
-
-
-    def stop(self):
-        self.thread.stop()
 
     def _start_conversation(self, dict):
         self.lock.acquire()
@@ -67,6 +67,9 @@ class ConversationHandler:
 
                 # Release the lock after processing the message
                 self.lock.release()
+                if self.stop:
+                    break
+
 
     def send_input(self, user_input):
         self.message_queue.put(user_input)

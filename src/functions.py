@@ -229,5 +229,6 @@ def file_initializer(buyers, targets, influencers, df):
         else:
             df.at[index, 'Influencer'] = 'NO'
 
-        df.to_excel('../xlsx files/output.xlsx', index=False)
+        #df.to_excel('../xlsx files/output.xlsx', index=False)
+        return df
 

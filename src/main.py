@@ -13,10 +13,10 @@ f.file_initializer(f.create_buyers('/Users/marco/Developer/GitHub/Botteg52/xlsx 
 #model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/orca-2-13b.Q4_0.gguf'
 
 # Alessandro
-#model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
+model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
 
 # Marco
-model_path = '/Users/marco/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
+#model_path = '/Users/marco/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
 
 # todo this must be done after the category has been assigned
 buyers = f.create_buyers('../HTML/uploaded/ContextData.xlsx')
@@ -32,12 +32,16 @@ companies = scr.web_scraper('../HTML/uploaded/InputData.xlsx') # create a dictio
 handler = ConversationHandler(model_path)     #just make sure to parse the context file before doing this operation otherwise it will have no file
 handler.start(companies)
 
+print('Starting the conversation\n')
+
 company_keys = list(companies.keys())
 index = 0
-time.sleep(2) #TODO prova a rimuovere questo
+
 while True:
     time.sleep(0.5)
+    print('lock not acquired')
     handler.lock.acquire()
+    print('lock acquired')
     description = ''
     company = ''
     company = company_keys[index]
@@ -46,17 +50,16 @@ while True:
     if(description == 'NULL'):
         continue
     #prompt = input("Enter a prompt: ")   #Answer with only one word by telling me just the player category of this Company: {dict.company}, using this description: {dict.text}
-    prompt = company + '*Answer with only one word by telling me just the player category of this Company: ' + company + ', using this description: ' + description
+    prompt = company + '*Answer with only one word by telling me just the player category of this Company: ' + company + ', using this description: ' + description + 'and as a rule mind that if you find the player in the description it is probably the right player to choose and the right answer to give'
     if(index >= len(company_keys)):
         handler.lock.release()
-        handler.stop()
         break;
     if(prompt == "exit"):
         handler.lock.release()
-        handler.stop()
         break
     handler.send_input(prompt)
     handler.lock.release()
+    time.sleep(2)
 
 for index, row in df.iterrows():
     company = row['Company / Account']
@@ -68,4 +71,5 @@ for index, row in df.iterrows():
         df.at[index, 'Sub- Type'] = 'NOT_VALID'
         df.at[index, 'Website ok'] = 'NO'
 
-df.to_excel('/src/OutputData.xlsx', index=False)
+df.to_excel('../xlsx files/output.xlsx', index=False)
+handler.stop()

@@ -60,9 +60,9 @@ def web_scraper(file):
         # debug
         scraped_entries += 1
 
-        company_name = company_name.split('_')[0]
-        company_name = company_name.lower()
-        company_name = company_name.strip()
+        company_name = company_name.split('_')[0]  # Split the string and take the first part
+        company_name = company_name.lower().strip()  # Convert to lowercase and remove whitespace
+
 
         # company already found
         if company_name in extracted_values:
@@ -114,6 +114,3 @@ def test_scrape(url):
     translation = f.translate_text(summary, 'en')
     print(translation)
 
-
-# DEBUG only
-test_scrape("https://grupoyoungretail.com")
