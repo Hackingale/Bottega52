@@ -1,5 +1,5 @@
+
 from LLM1 import ConversationHandler
-import time
 import src.functions as f
 import scraper as scr
 '''if __name__ == '__main__':
@@ -29,47 +29,10 @@ df = f.file_initializer(buyers, targets, influencers, df) #Company name, number 
 
 companies = scr.web_scraper('../HTML/uploaded/InputData.xlsx') # create a dictionary < company, text / 'null' >
 
-handler = ConversationHandler(model_path)     #just make sure to parse the context file before doing this operation otherwise it will have no file
-handler.start(companies)
-
-print('Starting the conversation\n')
-
 company_keys = list(companies.keys())
 index = 0
 
-while True:
-    time.sleep(0.5)
-    print('lock not acquired')
-    handler.lock.acquire()
-    print('lock acquired')
-    description = ''
-    company = ''
-    company = company_keys[index]
-    description = companies.get(company)
-    index += 1
-    if(description == 'NULL'):
-        continue
-    #prompt = input("Enter a prompt: ")   #Answer with only one word by telling me just the player category of this Company: {dict.company}, using this description: {dict.text}
-    prompt = company + '*Answer with only one word by telling me just the player category of this Company: ' + company + ', using this description: ' + description + 'and as a rule mind that if you find the player in the description it is probably the right player to choose and the right answer to give'
-    if(index >= len(company_keys)):
-        handler.lock.release()
-        break;
-    if(prompt == "exit"):
-        handler.lock.release()
-        break
-    handler.send_input(prompt)
-    handler.lock.release()
-    time.sleep(2)
+handler = ConversationHandler(model_path)     #just make sure to parse the context file before doing this operation otherwise it will have no file
+thread1 = handler.start(index, company_keys, companies, df, buyers, targets, influencers)
+thread2 = handler.start_messages(index, company_keys, companies, df)
 
-for index, row in df.iterrows():
-    company = row['Company / Account']
-    category = companies.get(company)
-    if category != 'NULL':
-        df.at[index, 'Sub-Type'] = category
-        df.at[index, 'Website ok'] = 'YES'
-    else:
-        df.at[index, 'Sub- Type'] = 'NOT_VALID'
-        df.at[index, 'Website ok'] = 'NO'
-
-df.to_excel('../xlsx files/output.xlsx', index=False)
-handler.stop()

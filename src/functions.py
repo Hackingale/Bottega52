@@ -210,25 +210,6 @@ def file_initializer(buyers, targets, influencers, df):
     df['Sub-Type'] = ''
     df['Buyer'] = 'NO'
     df['Influencer'] = 'NO'
-    df['Target'] = 'NO'
-    df['Website ok'] = 'NO'
-
-    # iterate over the "Categories" column and check if the company is a buyer, target, or influencer
-    for index, row in df.iterrows():
-        company = row['Sub-Type']
-        if company in buyers:
-            df.at[index, 'Buyer'] = 'YES'
-        else:
-            df.at[index, 'Buyer'] = 'NO'
-        if company in targets:
-            df.at[index, 'Target'] = 'YES'
-        else:
-            df.at[index, 'Target'] = 'NO'
-        if company in influencers:
-            df.at[index, 'Influencer'] = 'YES'
-        else:
-            df.at[index, 'Influencer'] = 'NO'
-
-        #df.to_excel('../xlsx files/output.xlsx', index=False)
-        return df
-
+    df['Target'] = 'FALSE'
+    df['Website ok'] = 'FALSE'
+    return df
