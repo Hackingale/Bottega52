@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
 
+import threading
+
 import pandas as pd
 import functions as f
 from bs4 import BeautifulSoup
@@ -8,8 +10,9 @@ from src.functions import company_name_cleaning
 from src.functions import domain_cleaning
 from src.functions import remove_after_underscore
 
-# MAKE SURE ALL DEBUG COMMENTS ARE DEACTIVATED ONCE RUNNING FINAL VERSION
+extracted_values = dict()  # Dictionary to store the extracted text from the web pages
 
+# MAKE SURE ALL DEBUG COMMENTS ARE DEACTIVATED ONCE RUNNING FINAL VERSION
 
 def scrape_es(company_url, extracted_values, company_name):
     url = 'https://www.' + company_url + '.es'  # Replace example.com with your base URL
@@ -53,15 +56,38 @@ def scrape_it(company_url, extracted_values, company_name):
 def web_scraper(file):
     # Read the Excel file
     df = pd.read_excel(file, header=None, usecols=[1, 3], skiprows=[0], names=['Contact E-mail', 'Company / Account'])
-    scraped_entries = 0
 
-    # hashMap to store all extracted values from a website in order to avoid multiple searches
-    extracted_values = dict()
+    # Determine the number of rows in the file and calculate the number of rows each section should contain
+    total_rows = len(df)
+    rows_per_section = total_rows // 10  # Integer division to evenly distribute rows
+
+    # Split the DataFrame into 10 sections
+    sections = []
+    for i in range(10):
+        start_row = i * rows_per_section
+        end_row = start_row + rows_per_section
+        if i == 9:  # Last section may have remaining rows
+            end_row = total_rows
+        section_df = df.iloc[start_row:end_row].reset_index(drop=True)  # Reset index for each section
+        sections.append(section_df)
+
+    threads = []
+
+    # Now, sections[0] contains the first DataFrame, sections[1] contains the second DataFrame, and so on.
+    for frame in sections:
+        # start a thread for each frame that executes function scrape
+        thread = threading.Thread(target=scrape, args=(frame,))
+        threads.append(thread)
+        thread.start()
+
+    # Wait for all threads to finish
+    for thread in threads:
+        thread.join()
+
+
+def scrape(df):
 
     for email, company_name in zip(df['Contact E-mail'], df['Company / Account']):
-
-        # debug
-        scraped_entries += 1
 
         company_name = company_name.split('_')[0]  # Split the string and take the first part
         company_name = company_name.lower().strip()  # Convert to lowercase and remove whitespace
@@ -91,7 +117,8 @@ def web_scraper(file):
                     if scrape_it(company_url, extracted_values, company_name) == 1:
                         continue
 
-    return extracted_values # company -> testo/NULL
+    # return extracted_values # company -> testo/NULL
+
 
 
 def status_code_ok(response, extracted_values, company_name):
@@ -117,3 +144,11 @@ def test_scrape(url):
     translation = f.translate_text(summary, 'en')
     print(translation)
 
+
+def test_multithreaded_scrape():
+    # Test the multithreaded web scraping function
+    web_scraper('../xlsx files/InputData.xlsx')
+    print(extracted_values)
+
+
+test_multithreaded_scrape()
