@@ -18,7 +18,7 @@ scraped_entries = 0  # Counter to keep track of the number of scraped entries
 # MAKE SURE ALL DEBUG COMMENTS ARE DEACTIVATED ONCE RUNNING FINAL VERSION
 
 
-def clear_scrape(company_url, extracted_values, company_name):
+def clear_scrape(extracted_values, company_name):
     url = 'https://autocomplete.clearbit.com/v1/companies/suggest?query={' + company_name + '}'
     response = requests.get(url)
 
@@ -30,7 +30,6 @@ def clear_scrape(company_url, extracted_values, company_name):
         domains = []
 
     if len(domains) == 0:
-        extracted_values[company_name] = 'NULL'
         return 1
     else:
         for domain in domains:
@@ -40,43 +39,36 @@ def clear_scrape(company_url, extracted_values, company_name):
                 translation = f.translate_text(extracted, 'en')
                 extracted_values[company_name] = translation
                 return 0
-            extracted_values[company_name] = 'NULL'
             return 1
 
-def scrape_es(company_url, extracted_values, company_name):
+
+def unclear_scrape(company_url, extracted_values, company_name):
+    # try spain first
     url = 'https://www.' + company_url + '.es'  # Replace example.com with your base URL
     extracted = f.summarize_text(url, 'spanish')
     if extracted is None:
-        extracted_values[company_name] = 'NULL'
-        return 1
+        # try italian
+        url = 'https://www.' + company_url + '.it'
+        extracted = f.summarize_text(url, 'italian')
+        if extracted is None:
+            # try english
+            url = 'https://www.' + company_url + '.com'
+            extracted = f.summarize_text(url, 'english')
+            if extracted is None:
+                extracted_values[company_name] = 'NULL'
+                return 1
+            else:
+                translation = f.translate_text(extracted, 'en')
+                extracted_values[company_name] = translation
+                return 0
+        else:
+            translation = f.translate_text(extracted, 'en')
+            extracted_values[company_name] = translation
+            return 0
     else:
         translation = f.translate_text(extracted, 'en')
         extracted_values[company_name] = translation
-    return 0
-
-
-def scrape_com(company_url, extracted_values, company_name):
-    url = 'https://www.' + company_url + '.com'  # Replace example.com with your base URL
-    extracted = f.summarize_text(url, 'english')
-    if extracted is None:
-        extracted_values[company_name] = 'NULL'
-        return 1
-    else:
-        translation = f.translate_text(extracted, 'en')
-        extracted_values[company_name] = translation
-    return 0
-
-
-def scrape_it(company_url, extracted_values, company_name):
-    url = 'https://www.' + company_url + '.it'  # Replace example.com with your base URL
-    extracted = f.summarize_text(url, 'italian')
-    if extracted is None:
-        extracted_values[company_name] = 'NULL'
-        return 1
-    else:
-        translation = f.translate_text(extracted, 'en')
-        extracted_values[company_name] = translation
-    return 0
+        return 0
 
 
 # Function to scrape the web page and extract the text content from the HTML
@@ -140,7 +132,8 @@ def scrape(df):
                 if company_url == "":
                     company_url = cleaned_domain
 
-            clear_scrape(company_url, extracted_values, company_name)
+            if clear_scrape(extracted_values, company_name) == 1:
+                unclear_scrape(company_url, extracted_values, company_name)
 
     # return extracted_values # company -> testo/NULL
 
@@ -176,4 +169,6 @@ def test_multithreaded_scrape():
     web_scraper('../xlsx files/InputData.xlsx') # all entries
     print(extracted_values)
     print(len(extracted_values.keys()))
+
+test_multithreaded_scrape()
 
