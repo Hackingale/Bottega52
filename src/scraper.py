@@ -151,4 +151,4 @@ def test_multithreaded_scrape():
     print(extracted_values)
 
 
-test_multithreaded_scrape()
+#test_multithreaded_scrape()

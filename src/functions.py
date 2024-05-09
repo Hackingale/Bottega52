@@ -203,6 +203,21 @@ def create_buyers(file):
     return buyers
 
 
+def parse_players_from_excel(file_path):
+    try:
+        # Read the Excel file into a pandas DataFrame
+        df = pd.read_excel(file_path)
+
+        # Check if 'Players' column exists
+        if 'Player' in df.columns:
+            # Get the values from the 'Players' column and convert them to a set
+            players_set = set(df['Player'].dropna())
+            return players_set
+    except Exception as e:
+        print(f"Error: {e}")
+        return set()
+
+
 # todo make it modular
 def file_initializer(buyers, targets, influencers, df):
 
