@@ -4,6 +4,8 @@ from __future__ import division, print_function, unicode_literals
 import threading
 
 import pandas as pd
+import requests
+
 import functions as f
 from bs4 import BeautifulSoup
 from src.functions import company_name_cleaning
@@ -11,8 +13,35 @@ from src.functions import domain_cleaning
 from src.functions import remove_after_underscore
 
 extracted_values = dict()  # Dictionary to store the extracted text from the web pages
+scraped_entries = 0  # Counter to keep track of the number of scraped entries
 
 # MAKE SURE ALL DEBUG COMMENTS ARE DEACTIVATED ONCE RUNNING FINAL VERSION
+
+
+def clear_scrape(company_url, extracted_values, company_name):
+    url = 'https://autocomplete.clearbit.com/v1/companies/suggest?query={' + company_name + '}'
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        data = response.json()
+        domains = [entry['domain'] for entry in data if 'domain' in entry]
+    else:
+        print("Error: Failed to retrieve data from the API")
+        domains = []
+
+    if len(domains) == 0:
+        extracted_values[company_name] = 'NULL'
+        return 1
+    else:
+        for domain in domains:
+            url = 'https://www.' + domain  # Replace example.com with your base URL
+            extracted = f.summarize_text(url, 'english')
+            if extracted is not None:
+                translation = f.translate_text(extracted, 'en')
+                extracted_values[company_name] = translation
+                return 0
+            extracted_values[company_name] = 'NULL'
+            return 1
 
 def scrape_es(company_url, extracted_values, company_name):
     url = 'https://www.' + company_url + '.es'  # Replace example.com with your base URL
@@ -111,11 +140,7 @@ def scrape(df):
                 if company_url == "":
                     company_url = cleaned_domain
 
-            # scraping various ways - todo make it cleaner this is disgusting
-            if scrape_es(company_url, extracted_values, company_name) == 1:
-                if scrape_com(company_url, extracted_values, company_name) == 1:
-                    if scrape_it(company_url, extracted_values, company_name) == 1:
-                        continue
+            clear_scrape(company_url, extracted_values, company_name)
 
     # return extracted_values # company -> testo/NULL
 
@@ -147,8 +172,10 @@ def test_scrape(url):
 
 def test_multithreaded_scrape():
     # Test the multithreaded web scraping function
-    web_scraper('../xlsx files/InputData.xlsx')
+    # web_scraper('../HTML/uploaded/InputData.xlsx') # 2 entries
+    web_scraper('../xlsx files/InputData.xlsx') # all entries
     print(extracted_values)
+    print(len(extracted_values.keys()))
 
 
 test_multithreaded_scrape()
