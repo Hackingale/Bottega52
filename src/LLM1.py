@@ -3,6 +3,7 @@ import threading
 import re
 from gpt4all import GPT4All
 import functions as func
+from fuzzywuzzy import process
 
 # Define ConversationHandler class
 class ConversationHandler:
@@ -44,10 +45,20 @@ class ConversationHandler:
         # If neither matches nor names from the set are found, return 'NULL'
         return 'NULL'
 
+    def find_most_similar_category(self, input_word):
+        # Use fuzzy matching to find the closest match from the categories set
+        closest_match, score = process.extractOne(input_word.strip(), self.players)
+
+        # If the similarity score is above a certain threshold, consider it a match
+        if score >= 90:  # Adjust threshold as needed
+            return closest_match
+        else:
+            return None  # If no close match found, return None
+
     def _start_conversation(self, index, company_keys, dict, df, buyers, targets, influencers):
-        print('Starting the conversation\n')
-        context = func.contextexcel_to_text("../HTML/uploaded/ContextData.xlsx")
         with self.condition:
+            print('Starting the conversation\n')
+            context = func.contextexcel_to_text("../HTML/uploaded/ContextData.xlsx")
             while True:
                 if self.stop:
                     break
@@ -71,10 +82,10 @@ class ConversationHandler:
                                 message = message[asterisk_index+1:]
                                 company = company.replace('*', '')
                                 answer = self.model.generate(message, max_tokens=4096)
-                                print(answer)
-                                dict[company] = self.parse_category(answer, )
-                                print(dict.get(company) + '\n')
-                                print('Company' + company + 'evaluated\n')
+                                answer = self.parse_category(answer)
+                                answer = self.find_most_similar_category(answer)
+                                dict[company] = self.parse_category(answer)
+                                print('Company ' + company + ' evaluated\n')
                                 if self.stop:
                                     break
                                 if(i < 14):
@@ -128,7 +139,7 @@ class ConversationHandler:
                 index += 1
                 if (description == 'NULL'):
                     continue
-                prompt = company + '*Perfect! Answer with only one word by telling me just the category of this Company based on the context file I gave you: ' + company + ', using this description: ' + description + 'and as a rule mind that if you find the player in the description it is probably the right player to choose and the right answer to give'
+                prompt = company + '*Perfect! Answer with only one word by telling me just the category of this Company based on the context file I gave you. It is mandatory to put the answer you find between ** and ** like this: **Answer**: ' + company + ', using this description: ' + description + 'and as a rule mind that if you find the player in the description it is probably the right player to choose and the right answer to give'
                 if (prompt == "exit"):
                     break
                 self.send_input(prompt)
