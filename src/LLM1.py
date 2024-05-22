@@ -135,6 +135,7 @@ class ConversationHandler:
                 description = ''
                 company = ''
                 company = company_keys[index]
+                # todo solve a possible index out of range
                 description = companies.get(company)
                 index += 1
                 if (description == 'NULL'):
@@ -145,7 +146,7 @@ class ConversationHandler:
                 self.send_input(prompt)
                 self.number -= 1
                 self.condition.notify()
-                if (index >= len(company_keys)):
+                if index >= len(company_keys):
                     self.stop = True
                     self.number = 0
                     self.condition.notify_all()
