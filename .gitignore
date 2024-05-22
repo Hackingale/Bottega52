@@ -182,9 +182,7 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 # idea folder, uncomment if you don't need it
-# .idea
-InputData.xlsx
-Manual Classification.xlsx
+.idea
 *.txt
 *.xlsx
-*.DS_Store
+.DS_Store
