@@ -12,10 +12,12 @@ def start_flask_app():
     fileupload.app.run(debug=True, use_reloader=False)
 
 if __name__ == '__main__':
-    '''
+
     # Start the Flask app in a separate thread
     server = Process(target=start_flask_app)
     server.start()
+
+    time.sleep(2)
 
     files_uploaded = False
     model_path = None
@@ -32,7 +34,7 @@ if __name__ == '__main__':
 
     server.terminate()
     server.join()
-    '''
+
     model_path = '/Users/alessandrom/PycharmProjects/Botteg52/HTML/models/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
 
     # Continue with your logic
@@ -43,11 +45,11 @@ if __name__ == '__main__':
     targets = f.create_targets('../HTML/uploaded/ContextData.xlsx')
     influencers = f.create_influencers('../HTML/uploaded/ContextData.xlsx')
 
-    df = f.countemployees('../HTML/uploaded/InputData.xlsx')    #Company name and number of employees
+    df = f.count_employees('../HTML/uploaded/InputData.xlsx')    #Company name and number of employees
 
     df = f.file_initializer(buyers, targets, influencers, df) #Company name, number of employees, Buyer, Influencer, Target
     start = time.time()
-    scr.web_scraper('../HTML/uploaded/InputData.xlsx') # create a dictionary < company, text / 'null' >
+    scr.web_scraper('../HTML/uploaded/InputData.xlsx', 10) # create a dictionary < company, text / 'null' >
     companies = scr.extracted_values
     company_keys = list(companies.keys())
     f.print_elapsed_time(start)

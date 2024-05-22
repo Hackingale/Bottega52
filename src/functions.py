@@ -4,6 +4,8 @@ from __future__ import division, print_function, unicode_literals
 import json
 import random
 import unicodedata
+from datetime import time
+
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
@@ -310,3 +312,14 @@ def file_initializer(buyers, targets, influencers, df):
     df['Target'] = 'FALSE'
     df['Website ok'] = 'FALSE'
     return df
+
+def print_elapsed_time(start):
+    end = time.time()
+    elapsed_time = end - start
+
+    if elapsed_time < 60:
+        print(f"Elapsed time: {elapsed_time:.2f} seconds")
+    else:
+        minutes = int(elapsed_time // 60)
+        seconds = int(elapsed_time % 60)
+        print(f"Elapsed time: {minutes}:{seconds:02d} mins")
