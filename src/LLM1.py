@@ -1,41 +1,45 @@
 import queue
 import threading
 import re
-from gpt4all import GPT4All
+import time
+import functions as f
 import functions as func
+import alive_progress as alive_bar
+from gpt4all import GPT4All
 from fuzzywuzzy import process
 
 # Define ConversationHandler class
 class ConversationHandler:
     def __init__(self, model_path, players):
         self.thread = None
-        self.model = GPT4All(model_path, n_ctx=8192, allow_download=True)
+        self.model = GPT4All(model_path, n_ctx=8192, allow_download=False)
         self.message_queue = queue.Queue()
         self.lock = threading.Lock()
-        self.condition = threading.Condition(lock=self.lock)
-        self.number = 0
-        self.thread2 = None
         self.stop = False
         self.players = players
+        self.progress = 0
+        self.totalNumber = 0
 
-
-    def generate_response(self, prompt):
-        with self.model.chat_session():
-            output = self.model.generate(prompt, max_tokens=4096)
-            return output
-    def start(self, index, company_keys, companies, df, buyers, targets, influencers):
-        self.thread = threading.Thread(target=self._start_conversation, args=(index, company_keys, companies, df, buyers, targets, influencers,))
+    #Passing the arguments to the start conversation and starts the thread
+    def start(self, companies, df, buyers, targets, influencers, TEMP):
+        self.thread = threading.Thread(target=self._start_conversation, args=(companies, df, buyers, targets, influencers, TEMP,))
         self.thread.start()
+        return self.thread
 
+    # Function to parse the category from the generated text
     def parse_category(self, text):
+        if not isinstance(text, str):
+            return 'NULL'
         # Attempt to find matches using regex pattern
         pattern = r'\*\*(.*?)\*\*'
         matches = re.findall(pattern, text)
 
         # If matches are found, return the first match
-        if matches:
-            cleaned_string = matches[0].strip("[]'")
-            return cleaned_string
+        for match in matches:
+            cleaned_string = match.strip("[]'")
+            if cleaned_string.lower() != 'answer':
+                cleaned_string = self.find_most_similar_category(cleaned_string)
+                return cleaned_string
 
         # If no matches are found, search for names from the given set
         for name in self.players:
@@ -55,43 +59,44 @@ class ConversationHandler:
         else:
             return None  # If no close match found, return None
 
-    def _start_conversation(self, index, company_keys, dict, df, buyers, targets, influencers):
-        with self.condition:
-            print('Starting the conversation\n')
-            context = func.contextexcel_to_text("../HTML/uploaded/ContextData.xlsx")
-            while True:
-                if self.stop:
-                    break
-                with self.model.chat_session():
-                    for i in range(0, 15):
-                                if(i == 0):
-                                    print('restart window\n')
-                                    prompt = "I'll give you a list of Players. Please remember them because they're crucial; Each player has two attributes: Player (the role of the company in the market) and Notes (additional information about the player's role). I will provide you a company and its description. You have to tell me which kind of player the company is. You must not to come up with new players just use the ones I will provide"
-                                    (self.model.generate(prompt, max_tokens=4096))
-                                    prompt = context + "\nI will now provide you the company and its description. You have to tell me which kind of player the company is. Remember if you explicitly find the Player's category in the description it is probably the right player to choose and the right answer to give"
-                                    (self.model.generate(prompt, max_tokens=4096))
-                                    self.number += 1
-                                    self.condition.notify()
-                                while self.number == 1:
-                                    if self.stop:
-                                        break
-                                    self.condition.wait()
-                                message = self.message_queue.get()
-                                asterisk_index = message.find('*')
-                                company = message[:asterisk_index]
-                                message = message[asterisk_index+1:]
-                                company = company.replace('*', '')
-                                answer = self.model.generate(message, max_tokens=4096)
-                                answer = self.parse_category(answer)
-                                answer = self.find_most_similar_category(answer)
-                                dict[company] = self.parse_category(answer)
-                                print('Company ' + company + ' evaluated\n')
-                                if self.stop:
-                                    break
-                                if(i < 14):
-                                    self.number += 1
-                                    self.condition.notify()
-
+    def _start_conversation(self, dict, df, buyers, targets, influencers, TEMP):
+        self.totalNumber = self.message_queue.qsize()
+        print('Starting the conversation\n')
+        start = time.time()
+        context = func.contextexcel_to_text("../HTML/uploaded/ContextData.xlsx")
+        number_of_companies = self.message_queue.qsize()
+        while self.message_queue.qsize() > 0:
+            with self.model.chat_session() as session:
+                for i in range(0, 12):
+                            if(i == 0):
+                                print('restart window\n')
+                                prompt = ("I'll give you a list of Players. Please remember them because they're crucial; "
+                                  "Each player has two attributes: Player (the role of the company in the market) "
+                                  "and Notes (additional information about the player's role). I will provide you a "
+                                  "company and its description. You have to tell me which kind of player the company is. "
+                                  "You must not come up with new players just use the ones I will provide")
+                                (self.model.generate(prompt, max_tokens=4096, temp=TEMP)) #we can make it nicer by using generate response
+                                prompt = context + ("\nI will now provide you the company and its description. You have to tell "
+                                                    "me which kind of player the company is. Remember if you explicitly find the Player's "
+                                                    "category in the description it is probably the right player to choose and the right answer to give.")
+                                (self.model.generate(prompt, max_tokens=4096, temp=TEMP))
+                            if self.stop:
+                                break
+                            message = self.message_queue.get()
+                            asterisk_index = message.find('*')
+                            company = message[:asterisk_index]
+                            message = message[asterisk_index+1:]
+                            company = company.replace('*', '')
+                            answer = self.model.generate(message, max_tokens=4096, temp=TEMP)
+                            print('answer: ' + answer)
+                            answer = self.parse_category(answer)
+                            dict[company] = answer #self.parse_category(answer)
+                            print('Company ' + company + ' evaluated\n')
+                            self.progress += 1
+                            print('Progress: ' + str(self.progress) + ' of ' + str(number_of_companies) + '\n')
+                            if self.stop or (self.message_queue.qsize() == 0):
+                                break
+        f.print_elapsed_time(start)
 
         for index, row in df.iterrows():
             company = row['Company / Account']
@@ -100,7 +105,7 @@ class ConversationHandler:
                 df.at[index, 'Sub-Type'] = category
                 df.at[index, 'Website ok'] = 'TRUE'
             else:
-                df.at[index, 'Sub- Type'] = 'NOT_VALID'
+                df.at[index, 'Sub-Type'] = 'NOT_VALID'
                 df.at[index, 'Website ok'] = 'FALSE'
 
         for index, row in df.iterrows():
@@ -117,37 +122,25 @@ class ConversationHandler:
                 df.at[index, 'Influencer'] = 'YES'
             else:
                 df.at[index, 'Influencer'] = 'NO'
-        df.to_excel('../xlsx files/output.xlsx', index=False)
+        df.to_excel('../HTML/uploaded/output.xlsx', index=False)
+
+    def generate_response(self, prompt, TEMP):
+        with self.model.chat_session():
+            output = self.model.generate(prompt, max_tokens=4096, temp=TEMP)
+            return output
 
     def send_input(self, user_input):
         self.message_queue.put(user_input)
 
-    def start_messages(self, index, company_keys, companies, df):
-        self.thread2 = threading.Thread(target=self.messages_in_queue, args=(index, company_keys, companies, df,))
-        self.thread2.start()
-
-    def messages_in_queue(self, index, company_keys, companies, df):
+    def put_messages_in_queue(self, company_keys, companies):
         print('Starting the conversation\n')
-        with self.condition:
-            while True:
-                while self.number == 0:
-                    self.condition.wait()
-                description = ''
-                company = ''
-                company = company_keys[index]
-                # todo solve a possible index out of range
-                description = companies.get(company)
-                index += 1
-                if (description == 'NULL'):
-                    continue
-                prompt = company + '*Perfect! Answer with only one word by telling me just the category of this Company based on the context file I gave you. It is mandatory to put the answer you find between ** and ** like this: **Answer**: ' + company + ', using this description: ' + description + 'and as a rule mind that if you find the player in the description it is probably the right player to choose and the right answer to give'
-                if (prompt == "exit"):
-                    break
-                self.send_input(prompt)
-                self.number -= 1
-                self.condition.notify()
-                if index >= len(company_keys):
-                    self.stop = True
-                    self.number = 0
-                    self.condition.notify_all()
-                    break
+        for i in range(0, len(company_keys)):
+            print('index is: ' + str(i) + '\n')
+            company = company_keys[i]
+            description = companies.get(company)
+            if (description == 'NULL' or description == 'null' or description == 'None' or description == 'none' or description == '' or len(description) <=10):
+                continue
+            prompt = company + '*Perfect! Answer with only one word by telling me just the category of this Company based on the context file I gave you. It is mandatory to put the answer you find between ** and ** (e.g. **Player**). Now answer company name: ' + company + ', using this description: ' + description + 'and as a rule mind that if you find the player in the description it is probably the right player to choose and the right answer to give'
+            if (prompt == "exit"):
+                break
+            self.send_input(prompt)
