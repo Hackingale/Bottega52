@@ -187,3 +187,4 @@ InputData.xlsx
 Manual Classification.xlsx
 *.txt
 *.xlsx
+*.DS_Store.*
