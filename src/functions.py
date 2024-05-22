@@ -2,19 +2,24 @@ from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
 
 import json
+import random
 import unicodedata
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import re
+import spacy
+from textblob import TextBlob
 
 from deep_translator import GoogleTranslator
 from sumy.parsers.html import HtmlParser
 from sumy.nlp.tokenizers import Tokenizer
-from sumy.parsers.plaintext import PlaintextParser
 from sumy.summarizers.lsa import LsaSummarizer as Summarizer
 from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
+
+# Load spaCy's English model
+nlp = spacy.load("en_core_web_sm")
 
 
 # Function to remove text after the last underscore in the company name
@@ -51,6 +56,7 @@ def domain_cleaning(email):
     cleaned_domain = domain_part.split('.')[0]
     return cleaned_domain
 
+
 def extract_data_from_website(url):
     try:
         url = 'https://www.' + url
@@ -69,6 +75,7 @@ def extract_data_from_website(url):
         print(e)
         return None
 
+
 def create_json_with_website_data(company_names, output_file):
     data = {}
     for company_name in company_names[:10]:
@@ -83,7 +90,8 @@ def create_json_with_website_data(company_names, output_file):
     except Exception as e:
         print("An error occurred while writing JSON file:", e)
 
-def contextexcel_to_text(xlsx_file):
+
+def context_excel_to_text(xlsx_file):
     # Read the CSV file into a pandas DataFrame
     df = pd.read_excel(xlsx_file)
     context_prompt = ''
@@ -100,13 +108,15 @@ def contextexcel_to_text(xlsx_file):
 
     return context_prompt
 
+
 def extract_name_or_email(row):
     if row['Company / Account'].startswith('_'):
         return domain_cleaning(str(row['Contact E-mail']))
     else:
         return row['Company / Account']
 
-def countemployees(input_file):
+
+def count_employees(input_file):
     # Read the Excel file into a DataFrame
     df = pd.read_excel(input_file)
 
@@ -134,43 +144,116 @@ def countemployees(input_file):
 
 # Function to translate text to a target language
 def translate_text(text, target_language):
-    translation = GoogleTranslator(source='auto', target=target_language).translate(text)
-    return translation
+    return GoogleTranslator(source='auto', target=target_language).translate(text) if text is not None else None
 
 
-def summarize_text(url, lan):
+def summarize_text(url, lan, num_sentences):
+    text = ''
     try:
         parser = HtmlParser.from_url(url, Tokenizer(lan))
         stemmer = Stemmer(lan)
         summarizer = Summarizer(stemmer)
         summarizer.stop_words = get_stop_words(lan)
-        text = ""
-        for sentence in summarizer(parser.document, 10):
+        for sentence in summarizer(parser.document, num_sentences):
             text += str(sentence) + "\n"  # Assuming you want a new line after each sentence
+        if not contains_common_sense_phrases(text):
+            return None
     except Exception as e:
         print("Error:", e)
         return None  # Return None or any other value indicating failure
+    if text == '':
+        return None
     return text
 
-def inputexcel_to_text(xlsx_file):
-    df = countemployees(xlsx_file)
+
+def contains_common_sense_phrases(text):
+
+    # if text only contains numbers, return False
+    if text.replace(" ", "").isdigit():
+        return False
+
+    # Analyze the text with spaCy
+    doc = nlp(text)
+
+    # Check for negations or contradictory phrases
+    for token in doc:
+        if token.dep_ == 'neg':
+            return False
+
+    # Perform sentiment analysis with TextBlob
+    blob = TextBlob(text)
+    sentiment = blob.sentiment
+
+    # Assume that text with neutral or positive sentiment is more likely to contain common sense phrases
+    if sentiment.polarity >= 0:
+        return True
+    else:
+        return False
+
+
+def random_choice(links, percentage):
+
+    factor = percentage / 100
+    # Define the range
+    start_range = 0
+    end_range = len(links) - 1
+
+    # Choose n random numbers within the range
+    n = end_range * factor
+    n = round(n)
+    random_numbers = random.sample(range(start_range, end_range + 1), n)
+
+    # Print the randomly chosen numbers
+    print("Random numbers within the range:", random_numbers)
+    chosen_links = []
+
+    for i in random_numbers:
+        chosen_links.append(links[i])
+    return chosen_links
+
+
+def specific_random_choice(links, number):
+
+    # Define the range
+    start_range = 0
+    end_range = len(links) - 1
+    n = number
+    # Choose n random numbers within the range
+    if number > end_range:
+        n = end_range
+    random_numbers = random.sample(range(start_range, end_range + 1), n)
+
+    # Print the randomly chosen numbers
+    print("Random numbers within the range:", random_numbers)
+    chosen_links = []
+
+    for i in random_numbers:
+        chosen_links.append(links[i])
+    return chosen_links
+
+
+def input_excel_to_text(xlsx_file):
+    df = count_employees(xlsx_file)
     # Iterate over each row in the DataFrame and extract the desired columns
     result = []
     for index, row in df.iterrows():
-        companyname = row['Company / Account']
+        company_name = row['Company / Account']
 
         # Append the extracted information as a dictionary to the result list
         result.append({
-            'Company Name': companyname
+            'Company Name': company_name
         })
 
     # Print the result list (or do whatever you want with it)
     return result
 
 
-def contextp_test(context):
-    prompt = "I will provide you a list of Players in the context of the real estate market. Each player is characterized by these following attributes: Player (the role of the figure in the market), Can they buy the solution? (are they able to buy the house/estate), Can they influence the buying decision?, Notes(additional  info regarding the player's role)\n"
-    prompt += contextexcel_to_text(context) + "\n"
+def context_test(context):
+    prompt = ("I will provide you a list of Players in the context of the real estate market. Each player is "
+              "characterized by these following attributes: Player (the role of the figure in the market), "
+              "Can they buy the solution? (are they able to buy the house/estate), Can they influence the buying "
+              "decision?, Notes(additional  info regarding the player's role)\n")
+    prompt += context_excel_to_text(context) + "\n"
 
 
 def create_influencers(file):
@@ -218,7 +301,6 @@ def parse_players_from_excel(file_path):
         return set()
 
 
-# todo make it modular
 def file_initializer(buyers, targets, influencers, df):
 
     # Create a new DataFrame with the required columns
