@@ -36,9 +36,9 @@ if __name__ == '__main__':
 
 
 
-    # model_path = '/Users/alessandrom/PycharmProjects/Botteg52/HTML/models/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
+    model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
     #  model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf'
-    model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/wizardlm-13b-v1.2.Q4_0.gguf'
+    # model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/wizardlm-13b-v1.2.Q4_0.gguf'
 
     # Continue with your logic
     players = f.parse_players_from_excel('../HTML/uploaded/ContextData.xlsx')

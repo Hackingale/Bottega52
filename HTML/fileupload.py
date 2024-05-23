@@ -3,7 +3,6 @@ from flask import Flask, request, render_template, jsonify
 
 app = Flask(__name__)
 project_root = os.path.abspath(os.path.dirname(__file__))
-# Define the directory to save the uploaded files
 UPLOAD_FOLDER = '../HTML/uploaded'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -15,6 +14,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 latest_model_path = None
 files_uploaded = False
+companies_evaluated = 0
+companies_scraped = False
+num_companies_scraped = 0
 
 @app.route('/')
 def index():
@@ -52,8 +54,27 @@ def success():
 
 @app.route('/get_model_path', methods=['GET'])
 def get_model_path():
-    global latest_model_path
+    global latest_model_path, files_uploaded
     return jsonify({"model_path": latest_model_path, "files_uploaded": files_uploaded})
+
+@app.route('/increment_counter', methods=['POST'])
+def increment_counter():
+    global companies_evaluated
+    companies_evaluated += 1
+    return jsonify({"companies_evaluated": companies_evaluated})
+
+@app.route('/companies_scraped', methods=['POST'])
+def set_companies_scraped():
+    global companies_scraped, num_companies_scraped
+    data = request.get_json()
+    num_companies_scraped = data.get('num_companies_scraped', 0)
+    companies_scraped = True
+    return jsonify({"companies_scraped": companies_scraped})
+
+@app.route('/check_companies_scraped', methods=['GET'])
+def check_companies_scraped():
+    global companies_scraped
+    return jsonify({"companies_scraped": companies_scraped})
 
 if __name__ == "__main__":
     app.run(debug=True)

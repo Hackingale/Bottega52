@@ -5,6 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Success</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+        }
+        .fade-in {
+            opacity: 1;
+            transition: opacity 0.5s ease-in;
+        }
+        .spinner {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #292929;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
     <div class="header">
@@ -18,20 +42,37 @@
             <p>Computation started</p>
             <p>Model Path: {{ model_path }}</p>
         </div>
-        <div class="spinner" id="spinner"></div>
     </div>
     <script>
+        function checkCompaniesScraped() {
+            fetch('/check_companies_scraped')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.companies_scraped) {
+                        const infoElement = document.getElementById('collecting-info');
+                        infoElement.classList.add('fade-out');
+                        setTimeout(() => {
+                            infoElement.textContent = 'Please wait, classifying companies';
+                            infoElement.classList.remove('fade-out');
+                            infoElement.classList.add('fade-in');
+                        }, 500); // Match this to the fade-out duration
+                    } else {
+                        setTimeout(checkCompaniesScraped, 2000); // Check again after 2 seconds
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
         setTimeout(() => {
             const header = document.getElementById('status-header');
             const message = document.getElementById('status-message');
-            const spinner = document.getElementById('spinner');
 
             header.classList.add('fade-out');
             message.classList.add('fade-out');
 
             setTimeout(() => {
                 header.textContent = "Please wait";
-                message.innerHTML = "<p>Collecting companies information</p>";
+                message.innerHTML = "<p id='collecting-info'>Please wait, collecting companies information</p><div class='spinner' id='spinner'></div>";
 
                 header.classList.remove('fade-out');
                 header.classList.add('fade-in', 'show');
@@ -39,7 +80,8 @@
                 message.classList.remove('fade-out');
                 message.classList.add('fade-in', 'show');
 
-                spinner.style.display = 'block';
+                document.getElementById('spinner').style.display = 'block';
+                checkCompaniesScraped();
             }, 500); // Wait for the fade-out transition to complete
         }, 2000); // Initial delay
     </script>

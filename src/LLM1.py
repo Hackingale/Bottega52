@@ -4,7 +4,7 @@ import re
 import time
 import functions as f
 import functions as func
-import alive_progress as alive_bar
+import requests
 from gpt4all import GPT4All
 from fuzzywuzzy import process
 
@@ -61,6 +61,7 @@ class ConversationHandler:
 
     def _start_conversation(self, dict, df, buyers, targets, influencers, TEMP):
         self.totalNumber = self.message_queue.qsize()
+        requests.post('http://127.0.0.1:5000/companies_scraped', json={'num_companies_scraped': self.totalNumber})
         print('Starting the conversation\n')
         start = time.time()
         context = func.context_excel_to_text("../HTML/uploaded/ContextData.xlsx")
@@ -96,6 +97,7 @@ class ConversationHandler:
                                 dict[company] = 'NA'
                             print('Company ' + company + ' evaluated\n')
                             self.progress += 1
+                            requests.post('http://127.0.0.1:5000/increment_counter')
                             print('Progress: ' + str(self.progress) + ' of ' + str(number_of_companies) + '\n')
                             if self.stop or (self.message_queue.qsize() == 0):
                                 break
