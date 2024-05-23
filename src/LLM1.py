@@ -102,7 +102,7 @@ class ConversationHandler:
                             if self.stop or (self.message_queue.qsize() == 0):
                                 break
         f.print_elapsed_time(start)
-
+        time.sleep(2)
         for index, row in df.iterrows():
             company = row['Company / Account']
             category = dict.get(company)

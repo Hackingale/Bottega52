@@ -24,6 +24,23 @@
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
+        .progress-bar-container {
+            display: none;
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 25px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .progress-bar {
+            width: 0;
+            height: 20px;
+            background-color: #292929;
+            border-radius: 25px;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+        }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -37,27 +54,57 @@
     </div>
     <div class="container">
         <h1 id="status-header">Success</h1>
+        <p id="upload-success-message">File uploaded successfully</p>
         <div id="status-message">
-            <p>File uploaded successfully</p>
-            <p>Computation started</p>
-            <p>Model Path: {{ model_path }}</p>
+            <p id="collecting-info" style="display:none">collecting information about the companies</p>
+            <div class="spinner" id="spinner"></div>
+            <div class="progress-bar-container" id="progress-bar-container">
+                <div class="progress-bar" id="progress-bar">0%</div>
+            </div>
         </div>
     </div>
     <script>
+        function updateProgressBar() {
+            fetch('/get_evaluated_count')
+                .then(response => response.json())
+                .then(data => {
+                    const progressBar = document.getElementById('progress-bar');
+                    const container = document.getElementById('progress-bar-container');
+                    const progress = (data.companies_evaluated / data.num_companies_scraped) * 100;
+                    progressBar.style.width = progress + '%';
+                    progressBar.textContent = Math.round(progress) + '%';
+
+                    if (progress >= 100) {
+                        container.style.display = 'none';
+                    } else {
+                        setTimeout(updateProgressBar, 2000); // Update progress bar every 2 seconds
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
         function checkCompaniesScraped() {
             fetch('/check_companies_scraped')
                 .then(response => response.json())
                 .then(data => {
                     if (data.companies_scraped) {
                         const infoElement = document.getElementById('collecting-info');
+                        const spinner = document.getElementById('spinner');
+                        const progressBarContainer = document.getElementById('progress-bar-container');
+
                         infoElement.classList.add('fade-out');
                         setTimeout(() => {
-                            infoElement.textContent = 'Please wait, classifying companies';
+                            infoElement.textContent = 'Classifying companies';
                             infoElement.classList.remove('fade-out');
                             infoElement.classList.add('fade-in');
+
+                            spinner.style.display = 'none';
+                            progressBarContainer.style.display = 'block';
+
+                            updateProgressBar();
                         }, 500); // Match this to the fade-out duration
                     } else {
-                        setTimeout(checkCompaniesScraped, 2000); // Check again after 2 seconds
+                        setTimeout(checkCompaniesScraped, 1000); // Check again after 2 seconds
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -65,22 +112,27 @@
 
         setTimeout(() => {
             const header = document.getElementById('status-header');
+            const uploadSuccessMessage = document.getElementById('upload-success-message');
             const message = document.getElementById('status-message');
+            const spinner = document.getElementById('spinner');
+            const infoElement = document.getElementById('collecting-info');
 
             header.classList.add('fade-out');
+            uploadSuccessMessage.classList.add('fade-out');
             message.classList.add('fade-out');
 
             setTimeout(() => {
                 header.textContent = "Please wait";
-                message.innerHTML = "<p id='collecting-info'>Please wait, collecting companies information</p><div class='spinner' id='spinner'></div>";
+                infoElement.style.display = 'block';
+                spinner.style.display = 'block';
 
                 header.classList.remove('fade-out');
                 header.classList.add('fade-in', 'show');
 
+                uploadSuccessMessage.style.display = 'none';
                 message.classList.remove('fade-out');
                 message.classList.add('fade-in', 'show');
 
-                document.getElementById('spinner').style.display = 'block';
                 checkCompaniesScraped();
             }, 500); // Wait for the fade-out transition to complete
         }, 2000); // Initial delay

@@ -76,5 +76,10 @@ def check_companies_scraped():
     global companies_scraped
     return jsonify({"companies_scraped": companies_scraped})
 
+@app.route('/get_evaluated_count', methods=['GET'])
+def get_evaluated_count():
+    global companies_evaluated, num_companies_scraped
+    return jsonify({"companies_evaluated": companies_evaluated, "num_companies_scraped": num_companies_scraped})
+
 if __name__ == "__main__":
     app.run(debug=True)
