@@ -4,7 +4,7 @@ from __future__ import division, print_function, unicode_literals
 import json
 import random
 import unicodedata
-from datetime import time
+from time import time
 
 import pandas as pd
 import requests
@@ -161,7 +161,7 @@ def summarize_text(url, lan, num_sentences):
         if not contains_common_sense_phrases(text):
             return None
     except Exception as e:
-        print("Error:", e)
+        # print("Error:", e)
         return None  # Return None or any other value indicating failure
     if text == '':
         return None
@@ -206,7 +206,7 @@ def random_choice(links, percentage):
     random_numbers = random.sample(range(start_range, end_range + 1), n)
 
     # Print the randomly chosen numbers
-    print("Random numbers within the range:", random_numbers)
+    # print("Random numbers within the range:", random_numbers)
     chosen_links = []
 
     for i in random_numbers:
@@ -226,7 +226,7 @@ def specific_random_choice(links, number):
     random_numbers = random.sample(range(start_range, end_range + 1), n)
 
     # Print the randomly chosen numbers
-    print("Random numbers within the range:", random_numbers)
+    # print("Random numbers within the range:", random_numbers)
     chosen_links = []
 
     for i in random_numbers:
@@ -314,7 +314,7 @@ def file_initializer(buyers, targets, influencers, df):
     return df
 
 def print_elapsed_time(start):
-    end = time.time()
+    end = time()
     elapsed_time = end - start
 
     if elapsed_time < 60:

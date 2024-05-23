@@ -1,0 +1,153 @@
+body {
+    font-family: 'Neue Haas Grotesk Display Pro 65 Medium', Arial, sans-serif;
+    background-color: #FAFAFA;
+    color: #292929;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+h1 {
+    text-align: center;
+    color: #292929;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form p {
+    position: relative;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 2px dashed transparent;
+    padding: 10px;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+form p.dragover {
+    border-color: #292929;
+    background-color: #f0f0f0;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.custom-file-upload {
+    padding: 8px 16px;
+    background-color: #292929;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    margin-right: 10px;
+}
+
+.custom-file-upload:hover {
+    background-color: #3e3e3e;  /* Slightly lighter shade for hover */
+}
+
+input[type="submit"] {
+    padding: 10px 20px;
+    background-color: #292929;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+input[type="submit"]:hover {
+    background-color: #555;
+}
+
+p {
+    text-align: center;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    background-color: #FAFAFA;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header img {
+    height: 50px;
+    margin-right: 15px;
+}
+
+.header .brand {
+    font-size: 24px;
+    font-weight: 500;
+    color: #292929;
+}
+
+.file-name {
+    font-size: 14px;
+    color: #292929;
+    margin-left: 10px;
+}
+
+/* Loading Spinner */
+.spinner {
+    display: none;
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #292929;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Transition Effects */
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease-out;
+}
+
+.fade-in {
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+}
+
+.fade-in.show {
+    opacity: 1;
+}
+
+/* Drag-and-Drop Indicator */
+.drop-icon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: #292929;
+    display: none;
+}
+
+form p.dragover .drop-icon {
+    display: block;
+}

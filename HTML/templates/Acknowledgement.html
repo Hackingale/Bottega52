@@ -1,9 +1,47 @@
-<html>
-    <head>
-	    <title>success</title>
-    </head>
-    <body>
-	    <p>File uploaded successfully</p>
-	    <p>File Name: {{name}}</p>
-    </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='images/bottega52_logo.png') }}" alt="Bottega52 Logo">
+        <div class="brand">Bottega52</div>
+    </div>
+    <div class="container">
+        <h1 id="status-header">Success</h1>
+        <div id="status-message">
+            <p>File uploaded successfully</p>
+            <p>Computation started</p>
+            <p>Model Path: {{ model_path }}</p>
+        </div>
+        <div class="spinner" id="spinner"></div>
+    </div>
+    <script>
+        setTimeout(() => {
+            const header = document.getElementById('status-header');
+            const message = document.getElementById('status-message');
+            const spinner = document.getElementById('spinner');
+
+            header.classList.add('fade-out');
+            message.classList.add('fade-out');
+
+            setTimeout(() => {
+                header.textContent = "Please wait";
+                message.innerHTML = "<p>Collecting companies information</p>";
+
+                header.classList.remove('fade-out');
+                header.classList.add('fade-in', 'show');
+
+                message.classList.remove('fade-out');
+                message.classList.add('fade-in', 'show');
+
+                spinner.style.display = 'block';
+            }, 500); // Wait for the fade-out transition to complete
+        }, 2000); // Initial delay
+    </script>
+</body>
 </html>

@@ -63,7 +63,7 @@ class ConversationHandler:
         self.totalNumber = self.message_queue.qsize()
         print('Starting the conversation\n')
         start = time.time()
-        context = func.contextexcel_to_text("../HTML/uploaded/ContextData.xlsx")
+        context = func.context_excel_to_text("../HTML/uploaded/ContextData.xlsx")
         number_of_companies = self.message_queue.qsize()
         while self.message_queue.qsize() > 0:
             with self.model.chat_session() as session:
@@ -90,7 +90,10 @@ class ConversationHandler:
                             answer = self.model.generate(message, max_tokens=4096, temp=TEMP)
                             print('answer: ' + answer)
                             answer = self.parse_category(answer)
-                            dict[company] = answer #self.parse_category(answer)
+                            if(answer != 'NULL'):
+                                dict[company] = answer #self.parse_category(answer)
+                            else:
+                                dict[company] = 'NA'
                             print('Company ' + company + ' evaluated\n')
                             self.progress += 1
                             print('Progress: ' + str(self.progress) + ' of ' + str(number_of_companies) + '\n')

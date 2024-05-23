@@ -1,5 +1,4 @@
 import time
-import threading
 import requests
 from LLM1 import ConversationHandler
 import src.functions as f
@@ -8,8 +7,11 @@ from HTML import fileupload
 from multiprocessing import Process
 
 TEMP = 0.5
+
+
 def start_flask_app():
     fileupload.app.run(debug=True, use_reloader=False)
+
 
 if __name__ == '__main__':
 
@@ -32,10 +34,11 @@ if __name__ == '__main__':
             print("Waiting for file upload...")
             time.sleep(2)
 
-    server.terminate()
-    server.join()
 
-    model_path = '/Users/alessandrom/PycharmProjects/Botteg52/HTML/models/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
+
+    # model_path = '/Users/alessandrom/PycharmProjects/Botteg52/HTML/models/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
+    #  model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf'
+    model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/wizardlm-13b-v1.2.Q4_0.gguf'
 
     # Continue with your logic
     players = f.parse_players_from_excel('../HTML/uploaded/ContextData.xlsx')
@@ -45,14 +48,19 @@ if __name__ == '__main__':
     targets = f.create_targets('../HTML/uploaded/ContextData.xlsx')
     influencers = f.create_influencers('../HTML/uploaded/ContextData.xlsx')
 
-    df = f.count_employees('../HTML/uploaded/InputData.xlsx')    #Company name and number of employees
+    df = f.count_employees('../HTML/uploaded/InputData.xlsx')  # Company name and number of employees
 
-    df = f.file_initializer(buyers, targets, influencers, df) #Company name, number of employees, Buyer, Influencer, Target
+    df = f.file_initializer(buyers, targets, influencers,
+                            df)  # Company name, number of employees, Buyer, Influencer, Target
     start = time.time()
-    scr.web_scraper('../HTML/uploaded/InputData.xlsx', 10) # create a dictionary < company, text / 'null' >
+    scr.web_scraper('../HTML/uploaded/InputData.xlsx', 10)  # create a dictionary < company, text / 'null' >
     companies = scr.extracted_values
     company_keys = list(companies.keys())
     f.print_elapsed_time(start)
-    handler = ConversationHandler(model_path, players)     #just make sure to parse the context file before doing this operation otherwise it will have no file
+    handler = ConversationHandler(model_path, players)
     handler.put_messages_in_queue(company_keys, companies)
-    handler._start_conversation(companies, df, buyers, targets, influencers, TEMP) #use the start function to start the thread instead of this
+    handler._start_conversation(companies, df, buyers, targets, influencers,
+                                TEMP)  # Use the start function to start the thread instead of this
+
+    server.terminate()
+    server.join()

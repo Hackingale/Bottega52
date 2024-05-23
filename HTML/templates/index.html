@@ -1,14 +1,107 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Files</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <form action="/success" method="post" enctype="multipart/form-data">
-        <p>Upload the Input file: <input type="file" name="input_file" /></p>
-        <p>Upload the context file: <input type="file" name="context_file" /></p>
-        <p>Upload the test set file: <input type="file" name="test_set_file" /></p>
-        <p>Upload the LLM model file: <input type="file" name="llm_file" /></p> <!-- Add this line -->
-        <input type="submit" value="Upload">
-    </form>
+    <div class="header">
+        <img src="{{ url_for('static', filename='images/bottega52_logo.png') }}" alt="Bottega52 Logo">
+        <div class="brand">Bottega52</div>
+    </div>
+    <div class="container">
+        <h1>Upload Files</h1>
+        <form id="uploadForm" action="/success" method="post" enctype="multipart/form-data">
+            <p id="input-file-p">
+                <label class="custom-file-upload">
+                    Choose Input File
+                    <input type="file" name="input_file" id="input_file" />
+                </label>
+                <span class="file-name" id="input_file_name">No file chosen</span>
+                <span class="drop-icon">📂</span>
+            </p>
+            <p id="context-file-p">
+                <label class="custom-file-upload">
+                    Choose Context File
+                    <input type="file" name="context_file" id="context_file" />
+                </label>
+                <span class="file-name" id="context_file_name">No file chosen</span>
+                <span class="drop-icon">📂</span>
+            </p>
+            <p id="test-set-file-p">
+                <label class="custom-file-upload">
+                    Choose Test Set File
+                    <input type="file" name="test_set_file" id="test_set_file" />
+                </label>
+                <span class="file-name" id="test_set_file_name">No file chosen</span>
+                <span class="drop-icon">📂</span>
+            </p>
+            <p id="llm-file-p">
+                <label class="custom-file-upload">
+                    Choose LLM Model File
+                    <input type="file" name="llm_file" id="llm_file" />
+                </label>
+                <span class="file-name" id="llm_file_name">No file chosen</span>
+                <span class="drop-icon">📂</span>
+            </p>
+            <input type="submit" value="Upload">
+        </form>
+        <div class="spinner" id="spinner"></div>
+    </div>
+    <script>
+        // Handle file selection for input buttons
+        document.querySelectorAll('input[type="file"]').forEach(input => {
+            input.addEventListener('change', function() {
+                const fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+                this.closest('p').querySelector('.file-name').textContent = fileName;
+            });
+        });
+
+        // Handle drag-and-drop for individual file inputs
+        const fileInputs = ['input_file', 'context_file', 'test_set_file', 'llm_file'];
+        fileInputs.forEach(fileInputId => {
+            const fileInput = document.getElementById(fileInputId);
+            const fileInputP = document.getElementById(fileInputId + '-p');
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                fileInputP.addEventListener(eventName, preventDefaults, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                fileInputP.addEventListener(eventName, () => fileInputP.classList.add('dragover'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                fileInputP.addEventListener(eventName, () => fileInputP.classList.remove('dragover'), false);
+            });
+
+            fileInputP.addEventListener('drop', handleDrop, false);
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+
+                fileInput.files = files;
+                const fileName = files[0] ? files[0].name : 'No file chosen';
+                fileInputP.querySelector('.file-name').textContent = fileName;
+            }
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission to show the spinner first
+            const spinner = document.getElementById('spinner');
+            spinner.style.display = 'block'; // Show the spinner
+            setTimeout(() => {
+                this.submit(); // Submit the form after showing the spinner for 2 seconds
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
