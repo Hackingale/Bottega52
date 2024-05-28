@@ -134,7 +134,7 @@ def count_employees(input_file):
     df['Company / Account'] = df['Company / Account'].str.strip()
 
     # Group the data by company name and get the size of each group (count of employees)
-    result_df = df.groupby('Company / Account').size().reset_index(name='Number of Employees')
+    result_df = df.groupby('Company / Account').size().reset_index(name='# contacts')
 
     # Save the result to an Excel file
     result_df.to_excel('../xlsx files/employee_counts.xlsx', index=False)
@@ -307,10 +307,10 @@ def file_initializer(buyers, targets, influencers, df):
 
     # Create a new DataFrame with the required columns
     df['Sub-Type'] = ''
-    df['Buyer'] = 'NO'
-    df['Influencer'] = 'NO'
+    df['Buyer (optional)'] = 'NO'
+    df['Influencer (optional)'] = 'NO'
     df['Target'] = 'FALSE'
-    df['Website ok'] = 'FALSE'
+    df['Website ok (optional)'] = 'FALSE'
     return df
 
 def print_elapsed_time(start):

@@ -273,9 +273,10 @@ def test_multithreaded_scrape():
 
 ############ TEST FUNCTIONS END ############
 
-
+'''
 web_scraper('../HTML/uploaded/InputData.xlsx', 10)
 print(extracted_values)
 print(len(extracted_values.keys()))
 
 
+'''

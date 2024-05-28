@@ -108,25 +108,26 @@ class ConversationHandler:
             category = dict.get(company)
             if category != 'NULL':
                 df.at[index, 'Sub-Type'] = category
-                df.at[index, 'Website ok'] = 'TRUE'
+                df.at[index, 'Website ok (optional)'] = 'TRUE'
             else:
                 df.at[index, 'Sub-Type'] = 'NOT_VALID'
-                df.at[index, 'Website ok'] = 'FALSE'
+                df.at[index, 'Website ok (optional)'] = 'FALSE'
 
         for index, row in df.iterrows():
             company = row['Sub-Type']
             if company in buyers:
-                df.at[index, 'Buyer'] = 'YES'
+                df.at[index, 'Buyer (optional)'] = 'YES'
             else:
-                df.at[index, 'Buyer'] = 'NO'
+                df.at[index, 'Buyer (optional)'] = 'NO'
             if company in targets:
                 df.at[index, 'Target'] = 'TRUE'
             else:
                 df.at[index, 'Target'] = 'FALSE'
             if company in influencers:
-                df.at[index, 'Influencer'] = 'YES'
+                df.at[index, 'Influencer (optional)'] = 'YES'
             else:
-                df.at[index, 'Influencer'] = 'NO'
+                df.at[index, 'Influencer (optional)'] = 'NO'
+        df.rename(columns={'Company / Account': 'Company'}, inplace=True)
         df.to_excel('../HTML/uploaded/output.xlsx', index=False)
 
     def generate_response(self, prompt, TEMP):
