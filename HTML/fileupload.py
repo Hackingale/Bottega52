@@ -39,8 +39,9 @@ def success():
 
         # Handle the uploaded LLM file
         if llm_file.filename != '':
-            llm_filename = 'USERLLM'  # Set the default filename for the uploaded LLM file
+            llm_filename = 'USERLLM.gguf'  # Set the default filename for the uploaded LLM file
             llm_file.save(os.path.join(app.config['UPLOAD_FOLDER'], llm_filename))
+            llm_filename = ''  # Reset the filename to an empty string
             latest_model_path = os.path.join(app.config['UPLOAD_FOLDER'], llm_filename)
         else:
             latest_model_path = DEFAULT_LLM_MODEL_PATH

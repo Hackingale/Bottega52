@@ -186,4 +186,4 @@ fabric.properties
 *.txt
 *.xlsx
 .DS_Store
-.idea/*
+/HTML/uploaded/

@@ -114,7 +114,7 @@ def clear_scrape(company_name):
 
             if ret is not None:
                 extracted_values[company_name] = ret
-                print(ret)
+                # print(ret)
                 return 0
         return 1
 
@@ -255,7 +255,7 @@ def status_code_ok(response, extracted_values, company_name):
     extracted_values[company_name] = text
 
     # Print the extracted text - DEBUG only
-    print(company_name)
+    # print(company_name)
 
 
 ############ TEST FUNCTIONS START ############

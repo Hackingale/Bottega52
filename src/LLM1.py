@@ -12,7 +12,7 @@ from fuzzywuzzy import process
 class ConversationHandler:
     def __init__(self, model_path, players):
         self.thread = None
-        self.model = GPT4All(model_path, n_ctx=8192, allow_download=False)
+        self.model = GPT4All(model_name='USERLLM', model_path=model_path, n_ctx=8192, allow_download=False)
         self.message_queue = queue.Queue()
         self.lock = threading.Lock()
         self.stop = False
