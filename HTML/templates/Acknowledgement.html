@@ -41,6 +41,20 @@
             line-height: 20px;
             color: white;
         }
+        .download-button {
+            display: none;
+            padding: 10px 20px;
+            background-color: #292929;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 20px auto;
+        }
+        .download-button:hover {
+            background-color: #555;
+        }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -62,6 +76,7 @@
                 <div class="progress-bar" id="progress-bar">0%</div>
             </div>
         </div>
+        <a id="download-button" class="download-button" href="#" download>Download Output File</a>
     </div>
     <script>
         function updateProgressBar() {
@@ -110,6 +125,30 @@
                 .catch(error => console.error('Error:', error));
         }
 
+        function checkOutputProvided() {
+            fetch('/check_output_provided')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.output_provided) {
+                        const progressBarContainer = document.getElementById('progress-bar-container');
+                        const infoElement = document.getElementById('collecting-info');
+                        const downloadButton = document.getElementById('download-button');
+                        progressBarContainer.classList.add('fade-out');
+                        infoElement.classList.add('fade-out');
+                        setTimeout(() => {
+                            progressBarContainer.style.display = 'none';
+                            infoElement.style.display = 'none';
+                            downloadButton.style.display = 'block';
+                            downloadButton.classList.add('fade-in');
+                            downloadButton.href = '/download_output';
+                        }, 500); // Match this to the fade-out duration
+                    } else {
+                        setTimeout(checkOutputProvided, 2000); // Check again after 2 seconds
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
         setTimeout(() => {
             const header = document.getElementById('status-header');
             const uploadSuccessMessage = document.getElementById('upload-success-message');
@@ -134,6 +173,7 @@
                 message.classList.add('fade-in', 'show');
 
                 checkCompaniesScraped();
+                checkOutputProvided();
             }, 500); // Wait for the fade-out transition to complete
         }, 2000); // Initial delay
     </script>

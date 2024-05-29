@@ -1,5 +1,6 @@
 import os
-from flask import Flask, request, render_template, jsonify
+import base64
+from flask import Flask, request, render_template, jsonify, send_from_directory
 
 app = Flask(__name__)
 project_root = os.path.abspath(os.path.dirname(__file__))
@@ -7,7 +8,7 @@ UPLOAD_FOLDER = '../HTML/uploaded'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Define the default LLM model path
-DEFAULT_LLM_MODEL_PATH = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
+DEFAULT_LLM_MODEL_PATH = '../HTML/uploaded/'
 
 # Ensure the upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -16,6 +17,7 @@ latest_model_path = None
 files_uploaded = False
 companies_evaluated = 0
 companies_scraped = False
+output_provided = False
 num_companies_scraped = 0
 
 @app.route('/')
@@ -81,6 +83,35 @@ def check_companies_scraped():
 def get_evaluated_count():
     global companies_evaluated, num_companies_scraped
     return jsonify({"companies_evaluated": companies_evaluated, "num_companies_scraped": num_companies_scraped})
+
+
+@app.route('/provide_output', methods=['POST'])
+def provide_output():
+    global output_provided
+    data = request.get_json()
+    if 'file_name' not in data or 'file_data' not in data:
+        return jsonify({"error": "Invalid payload"}), 400
+
+    file_name = data['file_name']
+    file_data = data['file_data']
+
+    # Decode the file data
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], file_name)
+    with open(file_path, 'wb') as f:
+        f.write(base64.b64decode(file_data))
+
+    output_provided = True
+    return jsonify({"output_provided": output_provided})
+
+@app.route('/check_output_provided', methods=['GET'])
+def check_output_provided():
+    global output_provided
+    return jsonify({"output_provided": output_provided})
+
+@app.route('/download_output', methods=['GET'])
+def download_output():
+    return send_from_directory(app.config['UPLOAD_FOLDER'], 'output.xlsx', as_attachment=True)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

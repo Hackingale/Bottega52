@@ -1,6 +1,8 @@
 import time
-
+import base64
+import json
 import pandas as pd
+import os
 import requests
 from LLM1 import ConversationHandler
 import src.functions as f
@@ -9,8 +11,21 @@ from HTML import fileupload
 from multiprocessing import Process
 import src.outputValidation as ov
 
-TEMP = 0.5
+TEMP = 0.0
 
+def send_output_file(file_path):
+    url = 'http://127.0.0.1:5000/provide_output'
+    with open(file_path, 'rb') as f:
+        encoded_file = base64.b64encode(f.read()).decode('utf-8')
+    data = {
+        'file_name': os.path.basename(file_path),
+        'file_data': encoded_file
+    }
+    response = requests.post(url, json=data)
+    if response.status_code == 200:
+        print("Output file sent successfully.")
+    else:
+        print("Failed to send output file.")
 
 def start_flask_app():
     fileupload.app.run(debug=True, use_reloader=False)
@@ -63,7 +78,8 @@ if __name__ == '__main__':
     handler.put_messages_in_queue(company_keys, companies)
     handler._start_conversation(companies, df, buyers, targets, influencers,
                                 TEMP)  # Use the start function to start the thread instead of this
+    send_output_file('../HTML/uploaded/output.xlsx')
+    print(ov.validate_output(pd.read_excel('../HTML/uploaded/output.xlsx'), pd.read_excel('../HTML/uploaded/TestSetData.xlsx'), ['Website ok (optional)']))
 
-    # print(ov.validate_output(pd.read_excel('../HTML/uploaded/output.xlsx'), pd.read_excel('../HTML/uploaded/TestSetData.xlsx'), ['Website ok (optional)']))
     server.terminate()
     server.join()
