@@ -11,7 +11,7 @@ from HTML import fileupload
 from multiprocessing import Process
 import src.outputValidation as ov
 
-TEMP = 0.0
+TEMP = 0.1
 
 def send_output_file(file_path):
     url = 'http://127.0.0.1:5000/provide_output'
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     handler._start_conversation(companies, df, buyers, targets, influencers,
                                 TEMP)  # Use the start function to start the thread instead of this
     send_output_file('../HTML/uploaded/output.xlsx')
-    print(ov.validate_output(pd.read_excel('../HTML/uploaded/output.xlsx'), pd.read_excel('../HTML/uploaded/TestSetData.xlsx'), ['Website ok (optional)']))
+    print(ov.validate_output(pd.read_excel('../HTML/uploaded/output.xlsx'), pd.read_excel('../HTML/uploaded/TestSetData.xlsx'), 'Company', ['Website ok (optional)']))
 
     server.terminate()
     server.join()
