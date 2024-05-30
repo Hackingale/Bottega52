@@ -39,12 +39,18 @@ class ConversationHandler:
             cleaned_string = match.strip("[]'")
             if cleaned_string.lower() != 'answer':
                 cleaned_string = self.find_most_similar_category(cleaned_string)
-                return cleaned_string
+                if cleaned_string is not None and len(cleaned_string) > 0:
+                    return cleaned_string
+                else:
+                    return 'NULL'
 
         # If no matches are found, search for names from the given set
         for name in self.players:
             if name.lower() in text.lower():
-                return name
+                if name is not None and len(name) > 0:
+                    return name
+                else:
+                    return 'NULL'
 
         # If neither matches nor names from the set are found, return 'NULL'
         return 'NULL'
@@ -76,11 +82,12 @@ class ConversationHandler:
                                   "and Notes (additional information about the player's role). I will provide you a "
                                   "company and its description. You have to tell me which kind of player the company is. "
                                   "You must not come up with new players just use the ones I will provide")
-                                (self.model.generate(prompt, max_tokens=4096, temp=TEMP)) #we can make it nicer by using generate response
+                                (self.model.generate(prompt, max_tokens=10, temp=TEMP)) #we can make it nicer by using generate response
                                 prompt = context + ("\nI will now provide you the company and its description. You have to tell "
                                                     "me which kind of player the company is. Remember if you explicitly find the Player's "
-                                                    "category in the description it is probably the right player to choose and the right answer to give.")
-                                (self.model.generate(prompt, max_tokens=4096, temp=TEMP))
+                                                    "category in the description it is probably the right player to choose and the right answer to give."
+                                                    )
+                                (self.model.generate(prompt, max_tokens=10, temp=TEMP))
                             if self.stop:
                                 break
                             message = self.message_queue.get()
@@ -88,10 +95,10 @@ class ConversationHandler:
                             company = message[:asterisk_index]
                             message = message[asterisk_index+1:]
                             company = company.replace('*', '')
-                            answer = self.model.generate(message, max_tokens=4096, temp=TEMP)
+                            answer = self.model.generate(message, max_tokens=10, temp=TEMP)
                             print('answer: ' + answer)
                             answer = self.parse_category(answer)
-                            if(answer != 'NULL'):
+                            if(answer != 'NULL' ):
                                 dict[company] = answer #self.parse_category(answer)
                             else:
                                 dict[company] = 'NA'

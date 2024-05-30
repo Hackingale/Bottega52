@@ -28,35 +28,36 @@ def send_output_file(file_path):
         print("Failed to send output file.")
 
 def start_flask_app():
-    fileupload.app.run(debug=True, use_reloader=False)
+    fileupload.app.run(debug=False, use_reloader=False)
 
 
 if __name__ == '__main__':
+    deb = input("Do you want to run the program in debug mode? (y/n): ")
+    if deb == 'n':
 
-    # Start the Flask app in a separate thread
-    server = Process(target=start_flask_app)
-    server.start()
+        # Start the Flask app in a separate thread
+        server = Process(target=start_flask_app)
+        server.start()
 
-    time.sleep(2)
+        time.sleep(2)
 
-    files_uploaded = False
-    model_path = None
+        files_uploaded = False
+        model_path = None
 
-    while not files_uploaded:
-        response = requests.get('http://127.0.0.1:5000/get_model_path')
-        if response.status_code == 200:
-            data = response.json()
-            model_path = data.get('model_path')
-            files_uploaded = data.get('files_uploaded')
-        if not files_uploaded:
-            print("Waiting for file upload...")
-            time.sleep(2)
+        while not files_uploaded:
+            response = requests.get('http://127.0.0.1:5000/get_model_path')
+            if response.status_code == 200:
+                data = response.json()
+                model_path = data.get('model_path')
+                files_uploaded = data.get('files_uploaded')
+            if not files_uploaded:
+                print("Waiting for file upload...")
+                time.sleep(2)
 
 
-    # model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf'
-    #  model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/Nous-Hermes-2-Mistral-7B-DPO.Q4_0.gguf'
-    # model_path = '/Users/alessandrom/Library/Application Support/nomic.ai/GPT4All/wizardlm-13b-v1.2.Q4_0.gguf'
-    # print(model_path)
+    if deb == 'y':
+        model_path = '../HTML/uploaded/'
+
     # Continue with your logic
     players = f.parse_players_from_excel('../HTML/uploaded/ContextData.xlsx')
 
@@ -80,6 +81,6 @@ if __name__ == '__main__':
                                 TEMP)  # Use the start function to start the thread instead of this
     send_output_file('../HTML/uploaded/output.xlsx')
     print(ov.validate_output(pd.read_excel('../HTML/uploaded/output.xlsx'), pd.read_excel('../HTML/uploaded/TestSetData.xlsx'), 'Company', ['Website ok (optional)']))
-
-    server.terminate()
-    server.join()
+    if deb == 'n':
+        server.terminate()
+        server.join()
