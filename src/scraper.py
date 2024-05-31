@@ -13,6 +13,8 @@ from src.functions import company_name_cleaning
 from src.functions import domain_cleaning
 from src.functions import remove_after_underscore
 
+import re
+
 # Global variables
 extracted_values = dict()  # Dictionary to store the extracted text from the web pages
 scraped_entries = 0  # Counter to keep track of the number of scraped entries
@@ -93,10 +95,11 @@ def clear_scrape(company_name):
             extracted = ''
             ret = ''
 
-            extracted = f.summarize_text(url, 'english', 3)
+            extracted = f.summarize_text(url, 'english', 12)
             translation = f.translate_text(extracted, 'en')
             ret = translation
             links = None
+            '''
             if extracted is not None:
                 links = get_links_level1(url)
             if links is not None:
@@ -111,7 +114,7 @@ def clear_scrape(company_name):
                     translation = f.translate_text(extracted, 'en')
                     if translation is not None:
                         ret += translation
-
+            '''
             if ret is not None:
                 extracted_values[company_name] = ret
                 # print(ret)
@@ -240,7 +243,6 @@ def scrape(df):
             # updates extracted_values: company -> testo/NULL
 
 
-
 def status_code_ok(response, extracted_values, company_name):
     # Parse the HTML content of the web page
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -258,7 +260,99 @@ def status_code_ok(response, extracted_values, company_name):
     # print(company_name)
 
 
+def fetch_wikipedia_page(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.content
+
+
+def find_all_list_item_links(content_div):
+    links = []
+    list_items = content_div.find_all('li')
+    for li in list_items:
+        first_link = li.find('a')
+        if first_link and 'href' in first_link.attrs:
+            links.append('https://en.wikipedia.org' + first_link['href'])
+    return links
+
+
+def scrape_wikipedia_paragraphs_from_list(links):
+    paragraphs = []
+    for link in links:
+        paragraphs.append(scrape_wikipedia_paragraphs(link))
+    return paragraphs
+
+
+def scrape_wikipedia_paragraphs(url):
+    content = fetch_wikipedia_page(url)
+    soup = BeautifulSoup(content, 'html.parser')
+
+    content_div = soup.find('div', class_='mw-content-ltr mw-parser-output')
+
+    paragraphs = []
+
+    for child in content_div.children:
+        if child.name == 'p':
+            paragraphs.append(child.get_text())
+            if 'may refer to' in child.get_text():
+                links = find_all_list_item_links(content_div)
+                if links:
+                    paragraphs.append("\nFollowing links found:\n" + "\n".join(links))
+                    return scrape_wikipedia_paragraphs_from_list(links)
+        elif child.name and child.name.startswith('h'):
+            break
+
+    return paragraphs
+
+
+def take_longest_paragraph(paragraphs):
+    longest = ""
+    for paragraph in paragraphs:
+        if len(paragraph) > len(longest):
+            longest = paragraph
+    return longest
+
+
+def wikipedia_scrape(excel_file):
+    # access the excel file, create the dataframe and extract the company names
+    df = pd.read_excel(excel_file, header=None, usecols=[3], skiprows=[0], names=['Company / Account'])
+
+    # iterate for each company name and save the extracted paragraphs into the dictionary
+    for company_name in df['Company / Account']:
+        try:
+            paragraphs = scrape_wikipedia_paragraphs('https://en.wikipedia.org/wiki/' + company_name)
+            paragraphs = take_longest_paragraph(paragraphs)
+            paragraphs = clean_text(paragraphs)
+            print(len(paragraphs))
+        except Exception as e:
+            paragraphs = None
+        extracted_values[company_name] = paragraphs
+
+    return 0
+
+
+def clean_text(text_list):
+    # Join the list into a single string
+    text = ' '.join(text_list)
+
+    # Remove newline characters
+    text = text.replace('\n', ' ')
+
+    # Remove numbers within square brackets
+    text = re.sub(r'\[\d+\]', '', text)
+
+    # Remove extra spaces
+    text = re.sub(r'\s+', ' ', text)
+
+    # Remove leading and trailing spaces
+    text = text.strip()
+
+    return text
+
+
+
 ############ TEST FUNCTIONS START ############
+
 
 def test_scrape(name):
     clear_scrape(name)
@@ -271,12 +365,5 @@ def test_multithreaded_scrape():
     print(extracted_values)
     print(len(extracted_values.keys()))
 
+
 ############ TEST FUNCTIONS END ############
-
-'''
-web_scraper('../HTML/uploaded/InputData.xlsx', 10)
-print(extracted_values)
-print(len(extracted_values.keys()))
-
-
-'''

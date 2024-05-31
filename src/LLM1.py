@@ -98,8 +98,8 @@ class ConversationHandler:
                             answer = self.model.generate(message, max_tokens=10, temp=TEMP)
                             print('answer: ' + answer)
                             answer = self.parse_category(answer)
-                            if(answer != 'NULL' ):
-                                dict[company] = answer #self.parse_category(answer)
+                            if(answer is not None ):
+                                dict[company] = answer # self.parse_category(answer)
                             else:
                                 dict[company] = 'NA'
                             print('Company ' + company + ' evaluated\n')
@@ -113,7 +113,7 @@ class ConversationHandler:
         for index, row in df.iterrows():
             company = row['Company / Account']
             category = dict.get(company)
-            if category != 'NULL':
+            if category is not None:
                 df.at[index, 'Sub-Type'] = category
                 df.at[index, 'Website ok (optional)'] = 'TRUE'
             else:
@@ -151,7 +151,7 @@ class ConversationHandler:
             print('index is: ' + str(i) + '\n')
             company = company_keys[i]
             description = companies.get(company)
-            if (description == 'NULL' or description == 'null' or description == 'None' or description == 'none' or description == '' or len(description) <=10):
+            if (description is None or description == ''):
                 continue
             prompt = company + '*Perfect! Answer with only one word by telling me just the category of this Company based on the context file I gave you. It is mandatory to put the answer you find between ** and ** (e.g. **Player**). Now answer company name: ' + company + ', using this description: ' + description + 'and as a rule mind that if you find the player in the description it is probably the right player to choose and the right answer to give'
             if (prompt == "exit"):
