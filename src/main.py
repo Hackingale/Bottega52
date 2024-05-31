@@ -1,6 +1,5 @@
 import time
 import base64
-import json
 import pandas as pd
 import os
 import requests
@@ -9,40 +8,41 @@ import src.functions as f
 import scraper as scr
 from HTML import fileupload
 from multiprocessing import Process
-import src.outputValidation as ov
+import src.outputValidation as oV
 
 TEMP = 0.1
 
+
 def send_output_file(file_path):
     url = 'http://127.0.0.1:5000/provide_output'
-    with open(file_path, 'rb') as f:
-        encoded_file = base64.b64encode(f.read()).decode('utf-8')
-    data = {
+    with open(file_path, 'rb') as file:
+        encoded_file = base64.b64encode(file.read()).decode('utf-8')
+    datapath = {
         'file_name': os.path.basename(file_path),
         'file_data': encoded_file
     }
-    response = requests.post(url, json=data)
-    if response.status_code == 200:
+    answer = requests.post(url, json=datapath)
+    if answer.status_code == 200:
         print("Output file sent successfully.")
     else:
         print("Failed to send output file.")
+
 
 def start_flask_app():
     fileupload.app.run(debug=False, use_reloader=False)
 
 
 if __name__ == '__main__':
-    deb = input("Do you want to run the program in debug mode? (y/n): ")
+    server = Process(target=start_flask_app)
+    model_path = None
+    deb = input("Do you want to skip the file upload process? (y/n): ")
     if deb == 'n':
 
         # Start the Flask app in a separate thread
-        server = Process(target=start_flask_app)
         server.start()
-
         time.sleep(2)
-
         files_uploaded = False
-        model_path = None
+
 
         while not files_uploaded:
             response = requests.get('http://127.0.0.1:5000/get_model_path')
@@ -80,7 +80,10 @@ if __name__ == '__main__':
     handler._start_conversation(companies, df, buyers, targets, influencers,
                                 TEMP)  # Use the start function to start the thread instead of this
     send_output_file('../HTML/uploaded/output.xlsx')
-    print(ov.validate_output(pd.read_excel('../HTML/uploaded/output.xlsx'), pd.read_excel('../HTML/uploaded/TestSetData.xlsx'), 'Company', ['Website ok (optional)']))
+    print(oV.validate_output(pd.read_excel('../HTML/uploaded/output.xlsx'),
+                             pd.read_excel('../HTML/uploaded/TestSetData.xlsx'),
+                             'Company',
+                             ['Website ok (optional)']))
     if deb == 'n':
         server.terminate()
         server.join()
