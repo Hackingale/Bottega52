@@ -18,6 +18,8 @@ files_uploaded = False
 companies_evaluated = 0
 companies_scraped = False
 output_provided = False
+test_set_uploaded = False
+output_downloaded = False
 num_companies_scraped = 0
 
 @app.route('/')
@@ -26,7 +28,7 @@ def index():
 
 @app.route('/success', methods=['POST'])
 def success():
-    global latest_model_path, files_uploaded
+    global latest_model_path, files_uploaded, test_set_uploaded
     if request.method == 'POST':
         # Retrieve each file using their corresponding names
         input_file = request.files['input_file']
@@ -37,7 +39,7 @@ def success():
         # Save each file with a unique name
         input_file.save(os.path.join(app.config['UPLOAD_FOLDER'], "InputData.xlsx"))
         context_file.save(os.path.join(app.config['UPLOAD_FOLDER'], "ContextData.xlsx"))
-        test_set_file.save(os.path.join(app.config['UPLOAD_FOLDER'], "TestSetData.xlsx"))
+
 
         # Handle the uploaded LLM file
         if llm_file.filename != '':
@@ -47,6 +49,12 @@ def success():
             latest_model_path = os.path.join(app.config['UPLOAD_FOLDER'], llm_filename)
         else:
             latest_model_path = DEFAULT_LLM_MODEL_PATH
+
+        if test_set_file.filename != '':
+            test_set_file.save(os.path.join(app.config['UPLOAD_FOLDER'], "TestSetData.xlsx"))
+            test_set_uploaded = True
+        else:
+            test_set_uploaded = False
         files_uploaded = True
 
         return render_template("Acknowledgement.html",
@@ -84,6 +92,11 @@ def get_evaluated_count():
     global companies_evaluated, num_companies_scraped
     return jsonify({"companies_evaluated": companies_evaluated, "num_companies_scraped": num_companies_scraped})
 
+@app.route('/get_test_set_uploaded', methods=['GET'])
+def get_test_set_uploaded():
+    global test_set_uploaded
+    return jsonify({"test_set_uploaded": test_set_uploaded})
+
 
 @app.route('/provide_output', methods=['POST'])
 def provide_output():
@@ -110,8 +123,24 @@ def check_output_provided():
 
 @app.route('/download_output', methods=['GET'])
 def download_output():
+    global output_downloaded
+    output_downloaded = True
     return send_from_directory(app.config['UPLOAD_FOLDER'], 'output.xlsx', as_attachment=True)
 
+@app.route('/check_output_downloaded', methods=['GET'])
+def check_output_downloaded():
+    global output_downloaded
+    return jsonify({"output_downloaded": output_downloaded})
+
+
+@app.route('/provide_precision', methods=['POST'])
+def provide_precision():
+    data = request.get_json()
+    if 'precision' not in data:
+        return jsonify({"error": "Invalid payload"}), 400
+
+    precision = data['precision']
+    return jsonify({"precision": precision})
 
 if __name__ == "__main__":
     app.run(debug=True)

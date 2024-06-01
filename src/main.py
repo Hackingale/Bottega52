@@ -12,7 +12,6 @@ import src.outputValidation as oV
 
 TEMP = 0.1
 
-
 def send_output_file(file_path):
     url = 'http://127.0.0.1:5000/provide_output'
     with open(file_path, 'rb') as file:
@@ -28,6 +27,18 @@ def send_output_file(file_path):
         print("Failed to send output file.")
 
 
+def send_precision(precision):
+    url = 'http://127.0.0.1:5000/provide_precision'
+    json = {
+        'precision': precision
+    }
+    answer = requests.post(url, json=json)
+    if answer.status_code == 200:
+        print("Precision sent successfully.")
+    else:
+        print("Failed to send precision.")
+
+
 def start_flask_app():
     fileupload.app.run(debug=False, use_reloader=False)
 
@@ -35,6 +46,7 @@ def start_flask_app():
 if __name__ == '__main__':
     server = Process(target=start_flask_app)
     model_path = None
+    test_set_uploaded = None
     deb = input("Do you want to skip the file upload process? (y/n): ")
     if deb == 'n':
 
@@ -54,6 +66,10 @@ if __name__ == '__main__':
                 print("Waiting for file upload...")
                 time.sleep(2)
 
+        response = requests.get('http://127.0.0.1:5000/get_test_set_uploaded')
+        if response.status_code == 200:
+            data = response.json()
+            test_set_uploaded = data.get('test_set_uploaded')
 
     if deb == 'y':
         model_path = '../HTML/uploaded/'
@@ -71,7 +87,7 @@ if __name__ == '__main__':
     df = f.file_initializer(buyers, targets, influencers,
                             df)  # Company name, number of employees, Buyer, Influencer, Target
     start = time.time()
-    scr.web_scraper('../HTML/uploaded/InputData.xlsx', 10)  # create a dictionary < company, text / 'null' >
+    scr.wikipedia_scrape('../HTML/uploaded/InputData.xlsx')  # create a dictionary < company, text / 'null' >
     companies = scr.extracted_values
     company_keys = list(companies.keys())
     f.print_elapsed_time(start)
@@ -80,10 +96,24 @@ if __name__ == '__main__':
     handler._start_conversation(companies, df, buyers, targets, influencers,
                                 TEMP)  # Use the start function to start the thread instead of this
     send_output_file('../HTML/uploaded/output.xlsx')
-    print(oV.validate_output(pd.read_excel('../HTML/uploaded/output.xlsx'),
-                             pd.read_excel('../HTML/uploaded/TestSetData.xlsx'),
-                             'Company',
-                             ['Website ok (optional)']))
+
+    if test_set_uploaded:
+        precision = oV.validate_output(pd.read_excel('../HTML/uploaded/output.xlsx'),
+                                 pd.read_excel('../HTML/uploaded/TestSetData.xlsx'),
+                                 'Company',
+                                 ['Website ok (optional)'])
+        print("Precision: " + str(precision))
+        send_precision(precision)
+
     if deb == 'n':
+        output_downloaded = False
+        while not output_downloaded:
+            response = requests.get('http://127.0.0.1:5000/check_output_downloaded')
+            if response.status_code == 200:
+                data = response.json()
+                output_downloaded = data.get('output_downloaded')
+            if not output_downloaded:
+                print("Waiting for output download...")
+                time.sleep(2)
         server.terminate()
         server.join()

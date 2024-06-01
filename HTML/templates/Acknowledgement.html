@@ -133,11 +133,18 @@
                         const progressBarContainer = document.getElementById('progress-bar-container');
                         const infoElement = document.getElementById('collecting-info');
                         const downloadButton = document.getElementById('download-button');
+                        const header = document.getElementById('status-header');
+
                         progressBarContainer.classList.add('fade-out');
                         infoElement.classList.add('fade-out');
+                        header.classList.add('fade-out');
+
                         setTimeout(() => {
                             progressBarContainer.style.display = 'none';
                             infoElement.style.display = 'none';
+                            header.textContent = 'Your file is ready';
+                            header.classList.remove('fade-out');
+                            header.classList.add('fade-in');
                             downloadButton.style.display = 'block';
                             downloadButton.classList.add('fade-in');
                             downloadButton.href = '/download_output';

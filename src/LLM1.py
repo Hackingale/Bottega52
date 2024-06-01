@@ -42,7 +42,7 @@ class ConversationHandler:
                 if cleaned_string is not None and len(cleaned_string) > 0:
                     return cleaned_string
                 else:
-                    return 'NULL'
+                    return None
 
         # If no matches are found, search for names from the given set
         for name in self.players:
@@ -50,10 +50,10 @@ class ConversationHandler:
                 if name is not None and len(name) > 0:
                     return name
                 else:
-                    return 'NULL'
+                    return None
 
         # If neither matches nor names from the set are found, return 'NULL'
-        return 'NULL'
+        return None
 
     def find_most_similar_category(self, input_word):
         # Use fuzzy matching to find the closest match from the categories set
@@ -101,7 +101,7 @@ class ConversationHandler:
                             if(answer is not None ):
                                 dict[company] = answer # self.parse_category(answer)
                             else:
-                                dict[company] = 'NA'
+                                dict[company] = None
                             print('Company ' + company + ' evaluated\n')
                             self.progress += 1
                             requests.post('http://127.0.0.1:5000/increment_counter')

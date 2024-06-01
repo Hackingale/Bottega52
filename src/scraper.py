@@ -326,6 +326,7 @@ def wikipedia_scrape(excel_file):
             print(len(paragraphs))
         except Exception as e:
             paragraphs = None
+        company_name = company_name.lower()
         extracted_values[company_name] = paragraphs
 
     return 0
