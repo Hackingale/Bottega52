@@ -18,14 +18,18 @@ def compute_correctness(to_test, reference, keys_header, to_exclude):
 
     # extract keys from the test set and the reference set
     players = to_test[keys_header]
+    for player in players:
+        player.lower()
     players_reference = reference[keys_header]
+    for player in players_reference:
+        player.lower()
 
     # drop the columns that are not relevant for the comparison
     to_test = to_test.drop(columns=to_exclude)
     reference = reference.drop(columns=to_exclude)
 
     # initialize the correctness variable
-    correctness = 0
+    correct = 0
     total = 0
 
     if players_reference.size == 0:
@@ -40,12 +44,15 @@ def compute_correctness(to_test, reference, keys_header, to_exclude):
             # extract the values of the player row from the second DataFrame and place it into an array
             values_reference = reference.loc[reference[keys_header] == player].values.flatten().tolist()
 
-            total += len(values_reference)
-            for i in range(0, len(values_reference)):
-                if values[i] == values_reference[i]:
-                    correctness += 1
+            total += len(values_reference) - 1
+            if 'NOT_VALID' in values_reference:
+                correct += len(values_reference) - 1
+            else:
+                for i in range(0, len(values_reference)):
+                    if values[i] == values_reference[i]:
+                        correct += 1
 
-    return str(correctness / total * 100) + ' %'
+    return str(correct / total * 100) + ' %'
 
 
 def validate_output(to_test, reference, keys_header, to_exclude):
@@ -56,4 +63,4 @@ def validate_output(to_test, reference, keys_header, to_exclude):
 
 
 # print(valid_format(pd.read_excel('../HTML/uploaded/Output.xlsx'), pd.read_excel('../HTML/uploaded/TestSet.xlsx')))
-# print(compute_correctness(pd.read_excel('../HTML/uploaded/Output.xlsx'), pd.read_excel('../HTML/uploaded/TestSet.xlsx'), ['Website ok (optional)']))
+print(compute_correctness(pd.read_excel('../HTML/uploaded/Output.xlsx'), pd.read_excel('../HTML/uploaded/TestSet.xlsx'),'Company' , ['Website ok (optional)']))

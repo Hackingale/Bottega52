@@ -94,7 +94,7 @@ if __name__ == '__main__':
     handler = ConversationHandler(model_path, players)
     handler.put_messages_in_queue(company_keys, companies)
     handler._start_conversation(companies, df, buyers, targets, influencers,
-                                TEMP)  # Use the start function to start the thread instead of this
+                                TEMP)  #  Use the start function to start the thread instead of this
     send_output_file('../HTML/uploaded/output.xlsx')
 
     if test_set_uploaded:

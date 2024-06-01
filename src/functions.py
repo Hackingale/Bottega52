@@ -149,22 +149,45 @@ def translate_text(text, target_language):
     return GoogleTranslator(source='auto', target=target_language).translate(text) if text is not None else None
 
 
+def count_sentences(text):
+    # Split text by sentence delimiters and filter out any empty strings
+    sentences = re.split(r'[.!?]+', text)
+    # Remove empty strings that can occur after splitting
+    sentences = [sentence for sentence in sentences if sentence.strip()]
+    return len(sentences)
+
+
 def summarize_text(url, lan, num_sentences):
     text = ''
     try:
+        # Parse the document
         parser = HtmlParser.from_url(url, Tokenizer(lan))
+        document = parser.document
+        full_text = " ".join([str(sentence) for sentence in document.sentences])
+
+        # Check the number of sentences in the extracted text
+        total_sentences = count_sentences(full_text)
+        if total_sentences < num_sentences:
+            return None  # Do not summarize if there are not enough sentences
+
+        # Proceed with summarization if enough sentences are available
         stemmer = Stemmer(lan)
         summarizer = Summarizer(stemmer)
         summarizer.stop_words = get_stop_words(lan)
-        for sentence in summarizer(parser.document, num_sentences):
-            text += str(sentence) + "\n"  # Assuming you want a new line after each sentence
+        for sentence in summarizer(document, num_sentences):
+            text += str(sentence) + "\n"
+
         if not contains_common_sense_phrases(text):
             return None
+
     except Exception as e:
+        # Optionally print or log the error
         # print("Error:", e)
         return None  # Return None or any other value indicating failure
+
     if text == '':
         return None
+
     return text
 
 

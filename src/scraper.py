@@ -23,7 +23,6 @@ scraped_entries = 0  # Counter to keep track of the number of scraped entries
 
 '''
 This functon takes a URL and returns a list of all the links on the first level of the website
-'''
 
 
 def get_links_level1(url):
@@ -55,6 +54,7 @@ def get_links_level1(url):
     else:
         print("Failed to fetch page:", response.status_code)
         return None
+'''
 
 
 '''
@@ -136,27 +136,33 @@ Function to scrape the web page and extract the text content from the HTML
 def unclear_scrape(company_url, company_name):
     # try spain first
     url = 'https://www.' + company_url + '.es'  # Replace example.com with your base URL
-    extracted = f.summarize_text(url, 'spanish', 3)
+    extracted = f.summarize_text(url, 'spanish', 15)
     if extracted is None:
         # try italian
         url = 'https://www.' + company_url + '.it'
-        extracted = f.summarize_text(url, 'italian', 3)
+        extracted = f.summarize_text(url, 'italian', 15)
         if extracted is None:
             # try english
             url = 'https://www.' + company_url + '.com'
-            extracted = f.summarize_text(url, 'english', 3)
+            extracted = f.summarize_text(url, 'english', 15)
             if extracted is None:
-                extracted_values[company_name] = 'NULL'
+                extracted_values[company_name] = None
                 return 1
             else:
+                if len(extracted) > 5000:
+                    extracted = extracted[:4999]
                 translation = f.translate_text(extracted, 'en')
                 extracted_values[company_name] = translation
                 return 0
         else:
+            if len(extracted) > 5000:
+                extracted = extracted[:4999]
             translation = f.translate_text(extracted, 'en')
             extracted_values[company_name] = translation
             return 0
     else:
+        if len(extracted) > 5000:
+            extracted = extracted[:4999]
         translation = f.translate_text(extracted, 'en')
         extracted_values[company_name] = translation
         return 0
@@ -216,6 +222,7 @@ def scrape(df):
 
     for email, company_name in zip(df['Contact E-mail'], df['Company / Account']):
 
+        original_name = company_name
         company_name = company_name.split('_')[0]  # Split the string and take the first part
         company_name = company_name.lower().strip()  # Convert to lowercase and remove whitespace
 
@@ -237,10 +244,10 @@ def scrape(df):
                 if company_url == "":
                     company_url = cleaned_domain
 
-            if clear_scrape(company_name) == 1:
-                unclear_scrape(company_url, company_name)
+            if wikipedia_scrape(original_name) == 1:
+                if clear_scrape(company_url) == 1:
+                    unclear_scrape(company_url, company_name)
 
-            # updates extracted_values: company -> testo/NULL
 
 
 def status_code_ok(response, extracted_values, company_name):
@@ -330,11 +337,19 @@ def wikipedia_scrape(excel_file):
         extracted_values[company_name] = paragraphs
 
     return 0
+def wikipedia_scrape(company_name):
+    paragraphs = ''
+    try:
+        paragraphs = scrape_wikipedia_paragraphs('https://en.wikipedia.org/wiki/' + company_name)
+        paragraphs = take_longest_paragraph(paragraphs)
+        paragraphs = clean_text(paragraphs)
+    except Exception as e:
+        paragraphs = None
+    extracted_values[company_name.lower()] = paragraphs
+    return 0 if paragraphs is not None and paragraphs != '' and len(paragraphs) > 0 else 1
 
 
-def clean_text(text_list):
-    # Join the list into a single string
-    text = ' '.join(text_list)
+def clean_text(text):
 
     # Remove newline characters
     text = text.replace('\n', ' ')
@@ -368,3 +383,12 @@ def test_multithreaded_scrape():
 
 
 ############ TEST FUNCTIONS END ############
+
+'''
+count=0
+web_scraper('../HTML/uploaded/InputData.xlsx', 2)
+for com in extracted_values.keys():
+    if extracted_values[com] is not None and extracted_values[com] != '' and len(extracted_values[com]) > 0:
+        print(count)
+        count+=1
+'''
