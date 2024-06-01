@@ -21,6 +21,7 @@ output_provided = False
 test_set_uploaded = False
 output_downloaded = False
 num_companies_scraped = 0
+precision = None
 
 @app.route('/')
 def index():
@@ -39,7 +40,6 @@ def success():
         # Save each file with a unique name
         input_file.save(os.path.join(app.config['UPLOAD_FOLDER'], "InputData.xlsx"))
         context_file.save(os.path.join(app.config['UPLOAD_FOLDER'], "ContextData.xlsx"))
-
 
         # Handle the uploaded LLM file
         if llm_file.filename != '':
@@ -97,7 +97,6 @@ def get_test_set_uploaded():
     global test_set_uploaded
     return jsonify({"test_set_uploaded": test_set_uploaded})
 
-
 @app.route('/provide_output', methods=['POST'])
 def provide_output():
     global output_provided
@@ -118,8 +117,11 @@ def provide_output():
 
 @app.route('/check_output_provided', methods=['GET'])
 def check_output_provided():
-    global output_provided
-    return jsonify({"output_provided": output_provided})
+    global output_provided, precision, test_set_uploaded
+    response = {"output_provided": output_provided}
+    if test_set_uploaded and precision is not None:
+        response["precision"] = precision
+    return jsonify(response)
 
 @app.route('/download_output', methods=['GET'])
 def download_output():
@@ -132,9 +134,9 @@ def check_output_downloaded():
     global output_downloaded
     return jsonify({"output_downloaded": output_downloaded})
 
-
 @app.route('/provide_precision', methods=['POST'])
 def provide_precision():
+    global precision
     data = request.get_json()
     if 'precision' not in data:
         return jsonify({"error": "Invalid payload"}), 400

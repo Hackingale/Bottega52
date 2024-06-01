@@ -76,6 +76,7 @@
                 <div class="progress-bar" id="progress-bar">0%</div>
             </div>
         </div>
+        <p id="precision-info" style="display:none"></p>
         <a id="download-button" class="download-button" href="#" download>Download Output File</a>
     </div>
     <script>
@@ -134,6 +135,7 @@
                         const infoElement = document.getElementById('collecting-info');
                         const downloadButton = document.getElementById('download-button');
                         const header = document.getElementById('status-header');
+                        const precisionInfo = document.getElementById('precision-info');
 
                         progressBarContainer.classList.add('fade-out');
                         infoElement.classList.add('fade-out');
@@ -148,6 +150,12 @@
                             downloadButton.style.display = 'block';
                             downloadButton.classList.add('fade-in');
                             downloadButton.href = '/download_output';
+
+                            if (data.precision) {
+                                precisionInfo.textContent = 'Output similarity with test set: ' + data.precision;
+                                precisionInfo.style.display = 'block';
+                                precisionInfo.classList.add('fade-in');
+                            }
                         }, 500); // Match this to the fade-out duration
                     } else {
                         setTimeout(checkOutputProvided, 2000); // Check again after 2 seconds
