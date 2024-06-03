@@ -229,7 +229,8 @@ def scrape(df):
         name = name[:-1]
 
         # take the company and make it lowercase
-        name = name.lower()
+        for i in range(len(name)):
+            name[i] = name[i].lower()
 
         original_name = name
 
