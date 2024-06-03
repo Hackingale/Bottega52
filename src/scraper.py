@@ -11,7 +11,6 @@ import functions as f
 from bs4 import BeautifulSoup
 from src.functions import company_name_cleaning
 from src.functions import domain_cleaning
-from src.functions import remove_after_underscore
 
 import re
 
@@ -226,11 +225,15 @@ def scrape(df):
 
         # remove everything after the last underscore
         name = name.split('_')
-        name = name[:-1]
+        if len(name) > 1:
+            name = name[:-1]
 
         # take the company and make it lowercase
         for i in range(len(name)):
             name[i] = name[i].lower()
+
+        # join the company name back together
+        name = '_'.join(name)
 
         original_name = name
 
@@ -262,8 +265,7 @@ def scrape(df):
             if clear_scrape(cleaned_domain) == 1:
                 unclear_scrape(cleaned_domain, company_name)
         else:
-            print("Error: Company name and email are both null")
-            continue
+            print("Error: Company name and email are both null " + company_name)
 
 
 def status_code_ok(response, extracted_values, company_name):

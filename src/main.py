@@ -103,7 +103,8 @@ if __name__ == '__main__':
                                  'Company',
                                  ['Website ok (optional)'])
         print("Precision: " + str(precision))
-        send_precision(precision)
+        if deb == 'n':
+            send_precision(precision)
 
     if deb == 'n':
         output_downloaded = False
