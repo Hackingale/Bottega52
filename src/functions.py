@@ -56,6 +56,9 @@ def domain_cleaning(email):
     domain_part = email.split('@')[-1]
     # Split the domain part at '.' and take the first part
     cleaned_domain = domain_part.split('.')[0]
+    # convert characters that might be representing a space to spaces
+    cleaned_domain = cleaned_domain.replace('-', ' ')
+    cleaned_domain = cleaned_domain.replace('_', ' ')
     return cleaned_domain
 
 

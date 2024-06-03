@@ -222,32 +222,47 @@ def scrape(df):
 
     for email, company_name in zip(df['Contact E-mail'], df['Company / Account']):
 
-        original_name = company_name
-        company_name = company_name.split('_')[0]  # Split the string and take the first part
-        company_name = company_name.lower().strip()  # Convert to lowercase and remove whitespace
+        name = company_name
+
+        # remove everything after the last underscore
+        name = name.split('_')
+        name = name[:-1]
+
+        # take the company and make it lowercase
+        name = name.lower()
+
+        original_name = name
 
         # company already found
-        if company_name in extracted_values:
+        if name in extracted_values.keys():
             continue
 
-        if pd.notnull(company_name):  # Check if company name is not null
+        flag = 0
 
-            # remove everything after the last underscore as sometimes there may be the name of the contact
-            company_url = remove_after_underscore(company_name)
-            company_url = company_name_cleaning(company_url)
+        if pd.notnull(name) and name != '' and len(name) > 0:  # Check if company name is not null
+            flag = 1
 
-            # DOMAIN CLEANING
-            if pd.notnull(email):  # Check if email is not null
-                cleaned_domain = domain_cleaning(email)
+            # clean the name removing accents and special characters
+            company_url = company_name_cleaning(name)
 
-                # if after that deletion the company is void, use the main domain
-                if company_url == "":
-                    company_url = cleaned_domain
+        # DOMAIN CLEANING
+        # else check if email is not null
+        elif pd.notnull(email) and email != '' and len(email) > 0:
+            flag = 2
 
+            # takes only the domain part
+            cleaned_domain = domain_cleaning(email)
+
+        if flag == 1:
             if wikipedia_scrape(original_name) == 1:
                 if clear_scrape(company_url) == 1:
                     unclear_scrape(company_url, company_name)
-
+        elif flag == 2:
+            if clear_scrape(cleaned_domain) == 1:
+                unclear_scrape(cleaned_domain, company_name)
+        else:
+            print("Error: Company name and email are both null")
+            continue
 
 
 def status_code_ok(response, extracted_values, company_name):
