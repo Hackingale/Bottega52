@@ -267,11 +267,11 @@ def scrape(df):
         if flag == 1:
             if wikipedia_scrape(original_name) == 1:
                 if clear_scrape(company_url) == 1:
-                    unclear_scrape(company_url, company_name)
+                    unclear_scrape(company_url, company_name.lower())
             print("Scraped: " + original_name)
         elif flag == 2:
             if clear_scrape(cleaned_domain) == 1:
-                unclear_scrape(cleaned_domain, company_name)
+                unclear_scrape(cleaned_domain, company_name.lower())
             print("Scraped: " + cleaned_domain)
         else:
             print("Error: Company name and email are both null " + company_name)
@@ -355,8 +355,9 @@ def wikipedia_scrape(company_name):
         paragraphs = clean_text(paragraphs)
     except Exception as e:
         paragraphs = None
+        return 1
     extracted_values[company_name.lower()] = paragraphs
-    return 0 if paragraphs is not None and paragraphs != '' and len(paragraphs) > 0 else 1
+    return 0
 
 
 def clean_text(text):

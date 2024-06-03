@@ -44,8 +44,8 @@ def remove_after_underscore(company_name):
 def company_name_cleaning(company_name):
     # Remove accents
     text = unicodedata.normalize('NFKD', company_name).encode('ASCII', 'ignore').decode('utf-8')
-    # Remove special characters except letters and numbers but not spaces
-    cleaned_name = re.sub(r'[^a-zA-Z0-9\s]', '', text)
+    # Remove special characters except letters, numbers and spaces
+    cleaned_name = re.sub(r'[^a-zA-Z0-9]', '', text)
     # Convert to lowercase
     cleaned_name = cleaned_name.lower()
     return cleaned_name
