@@ -16,9 +16,13 @@ import re
 
 # Global variables
 extracted_values = dict()  # Dictionary to store the extracted text from the web pages
-scraped_entries = 0  # Counter to keep track of the number of scraped entries
-
 # MAKE SURE ALL DEBUG COMMENTS ARE DEACTIVATED ONCE RUNNING FINAL VERSION
+
+
+def counter(val):
+    val = val+1
+    return val
+
 
 '''
 This functon takes a URL and returns a list of all the links on the first level of the website
@@ -261,9 +265,11 @@ def scrape(df):
             if wikipedia_scrape(original_name) == 1:
                 if clear_scrape(company_url) == 1:
                     unclear_scrape(company_url, company_name)
+                    print("Scraped: " + original_name)
         elif flag == 2:
             if clear_scrape(cleaned_domain) == 1:
                 unclear_scrape(cleaned_domain, company_name)
+                print("Scraped: " + cleaned_domain)
         else:
             print("Error: Company name and email are both null " + company_name)
 
