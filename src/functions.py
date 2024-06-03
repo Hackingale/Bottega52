@@ -173,7 +173,7 @@ def summarize_text(url, lan, num_sentences):
         # Check the number of sentences in the extracted text
         total_sentences = count_sentences(full_text)
         if total_sentences < num_sentences:
-            return None  # Do not summarize if there are not enough sentences
+            return full_text  # Do not summarize if there are not enough sentences
 
         # Proceed with summarization if enough sentences are available
         stemmer = Stemmer(lan)
