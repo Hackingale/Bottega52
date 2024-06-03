@@ -71,8 +71,8 @@ taking advantage of Clearbit to get possible domains of the company
 '''
 
 
-def clear_scrape(company_name):
-    url = 'https://autocomplete.clearbit.com/v1/companies/suggest?query={' + company_name + '}'
+def clear_scrape(company_url, company_name):
+    url = 'https://autocomplete.clearbit.com/v1/companies/suggest?query={' + company_url + '}'
     try:
         # Send a GET request to the ClearBit API with a timeout of 5 seconds
         response = requests.get(url, timeout=5)
@@ -229,7 +229,6 @@ def scrape(df):
     for email, company_name in zip(df['Contact E-mail'], df['Company / Account']):
 
         name = company_name
-
         # remove everything after the last underscore
         name = name.split('_')
         if len(name) > 1:
@@ -241,6 +240,10 @@ def scrape(df):
 
         # join the company name back together
         name = '_'.join(name)
+
+        # remove spaces at the end of the word in case there are any
+        name = name.rstrip()
+        company_name = name
 
         original_name = name
 
@@ -266,11 +269,11 @@ def scrape(df):
 
         if flag == 1:
             if wikipedia_scrape(original_name) == 1:
-                if clear_scrape(company_url) == 1:
+                if clear_scrape(company_url, company_name.lower()) == 1:
                     unclear_scrape(company_url, company_name.lower())
             print("Scraped: " + original_name)
         elif flag == 2:
-            if clear_scrape(cleaned_domain) == 1:
+            if clear_scrape(cleaned_domain, company_name.lower()) == 1:
                 unclear_scrape(cleaned_domain, company_name.lower())
             print("Scraped: " + cleaned_domain)
         else:

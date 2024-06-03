@@ -10,7 +10,7 @@ from HTML import fileupload
 from multiprocessing import Process
 import src.outputValidation as oV
 
-TEMP = 0.1
+TEMP = 0.19
 
 def send_output_file(file_path):
     url = 'http://127.0.0.1:5000/provide_output'
@@ -87,7 +87,8 @@ if __name__ == '__main__':
     df = f.file_initializer(buyers, targets, influencers,
                             df)  # Company name, number of employees, Buyer, Influencer, Target
     start = time.time()
-    scr.web_scraper('../HTML/uploaded/InputData.xlsx', 10)  # create a dictionary < company, text / 'null' >
+
+    scr.web_scraper('../HTML/uploaded/InputData.xlsx', 1)  # create a dictionary < company, text / 'null' >
     companies = scr.extracted_values
     company_keys = list(companies.keys())
     f.print_elapsed_time(start)
@@ -97,12 +98,13 @@ if __name__ == '__main__':
                                 TEMP)  #  Use the start function to start the thread instead of this
     send_output_file('../HTML/uploaded/output.xlsx')
 
+    precision = oV.validate_output(pd.read_excel('../HTML/uploaded/output.xlsx'),
+                                   pd.read_excel('../HTML/uploaded/TestSetData.xlsx'),
+                                   'Company',
+                                   ['Website ok (optional)'])
+    print("Precision: " + str(precision))
+
     if test_set_uploaded:
-        precision = oV.validate_output(pd.read_excel('../HTML/uploaded/output.xlsx'),
-                                 pd.read_excel('../HTML/uploaded/TestSetData.xlsx'),
-                                 'Company',
-                                 ['Website ok (optional)'])
-        print("Precision: " + str(precision))
         if deb == 'n':
             send_precision(precision)
 
