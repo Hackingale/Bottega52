@@ -74,7 +74,8 @@ taking advantage of Clearbit to get possible domains of the company
 def clear_scrape(company_name):
     url = 'https://autocomplete.clearbit.com/v1/companies/suggest?query={' + company_name + '}'
     try:
-        response = requests.get(url)
+        # Send a GET request to the ClearBit API with a timeout of 5 seconds
+        response = requests.get(url, timeout=5)
     except Exception as e:
         print("Error: Failed to connect to the ClearBit API")
         return 1
@@ -137,9 +138,11 @@ Function to scrape the web page and extract the text content from the HTML
 
 
 def unclear_scrape(company_url, company_name):
+
     # try spain first
     url = 'https://www.' + company_url + '.es'  # Replace example.com with your base URL
     extracted = f.summarize_text(url, 'spanish', 15)
+
     if extracted is None:
         # try italian
         url = 'https://www.' + company_url + '.it'
@@ -265,11 +268,11 @@ def scrape(df):
             if wikipedia_scrape(original_name) == 1:
                 if clear_scrape(company_url) == 1:
                     unclear_scrape(company_url, company_name)
-                    print("Scraped: " + original_name)
+            print("Scraped: " + original_name)
         elif flag == 2:
             if clear_scrape(cleaned_domain) == 1:
                 unclear_scrape(cleaned_domain, company_name)
-                print("Scraped: " + cleaned_domain)
+            print("Scraped: " + cleaned_domain)
         else:
             print("Error: Company name and email are both null " + company_name)
 
@@ -344,23 +347,6 @@ def take_longest_paragraph(paragraphs):
     return longest
 
 
-def wikipedia_scrape(excel_file):
-    # access the excel file, create the dataframe and extract the company names
-    df = pd.read_excel(excel_file, header=None, usecols=[3], skiprows=[0], names=['Company / Account'])
-
-    # iterate for each company name and save the extracted paragraphs into the dictionary
-    for company_name in df['Company / Account']:
-        try:
-            paragraphs = scrape_wikipedia_paragraphs('https://en.wikipedia.org/wiki/' + company_name)
-            paragraphs = take_longest_paragraph(paragraphs)
-            paragraphs = clean_text(paragraphs)
-            print(len(paragraphs))
-        except Exception as e:
-            paragraphs = None
-        company_name = company_name.lower()
-        extracted_values[company_name] = paragraphs
-
-    return 0
 def wikipedia_scrape(company_name):
     paragraphs = ''
     try:

@@ -44,8 +44,8 @@ def remove_after_underscore(company_name):
 def company_name_cleaning(company_name):
     # Remove accents
     text = unicodedata.normalize('NFKD', company_name).encode('ASCII', 'ignore').decode('utf-8')
-    # Remove special characters except letters and numbers
-    cleaned_name = re.sub(r'[^a-zA-Z0-9]', '', text)
+    # Remove special characters except letters and numbers but not spaces
+    cleaned_name = re.sub(r'[^a-zA-Z0-9\s]', '', text)
     # Convert to lowercase
     cleaned_name = cleaned_name.lower()
     return cleaned_name
@@ -149,6 +149,8 @@ def count_employees(input_file):
 
 # Function to translate text to a target language
 def translate_text(text, target_language):
+    if text is None:
+        return None
     return GoogleTranslator(source='auto', target=target_language).translate(text) if text is not None else None
 
 
