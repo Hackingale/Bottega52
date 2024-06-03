@@ -158,19 +158,19 @@ def unclear_scrape(company_url, company_name):
                 if len(extracted) > 5000:
                     extracted = extracted[:4999]
                 translation = f.translate_text(extracted, 'en')
-                extracted_values[company_name] = translation
+                extracted_values[company_name.lower()] = translation
                 return 0
         else:
             if len(extracted) > 5000:
                 extracted = extracted[:4999]
             translation = f.translate_text(extracted, 'en')
-            extracted_values[company_name] = translation
+            extracted_values[company_name.lower()] = translation
             return 0
     else:
         if len(extracted) > 5000:
             extracted = extracted[:4999]
         translation = f.translate_text(extracted, 'en')
-        extracted_values[company_name] = translation
+        extracted_values[company_name.lower()] = translation
         return 0
 
 
