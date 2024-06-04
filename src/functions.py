@@ -97,6 +97,23 @@ def create_json_with_website_data(company_names, output_file):
         print("An error occurred while writing JSON file:", e)
 
 
+# most recurrent player in column Sub-type of the dataframe of the input excel file different from NOT_VALID
+def most_recurrent_player(input_file):
+    # Read the Excel file into a DataFrame
+    df = pd.read_excel(input_file)
+
+    # Filter out rows where 'Sub-Type' is 'NOT_VALID'
+    df = df[df['Sub-Type'] != 'NOT_VALID']
+
+    # Group the data by 'Sub-Type' and get the size of each group
+    result_df = df.groupby('Sub-Type').size().reset_index(name='Count')
+
+    # Find the most recurrent player
+    most_recurrent_player = result_df.loc[result_df['Count'].idxmax()]['Sub-Type']
+
+    return most_recurrent_player
+
+
 def context_excel_to_text(xlsx_file):
     # Read the CSV file into a pandas DataFrame
     df = pd.read_excel(xlsx_file)

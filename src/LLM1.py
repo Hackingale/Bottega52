@@ -1,7 +1,11 @@
+import os
 import queue
 import threading
 import re
 import time
+
+import pandas as pd
+
 import functions as f
 import functions as func
 import requests
@@ -134,6 +138,31 @@ class ConversationHandler:
                 df.at[index, 'Influencer (optional)'] = 'YES'
             else:
                 df.at[index, 'Influencer (optional)'] = 'NO'
+
+        # Check if the file exists
+        file_path = '../HTML/uploaded/TestSetData.xlsx'
+        context_path = '../HTML/uploaded/ContextData.xlsx'
+
+        if os.path.isfile(file_path):
+            most_recurrent = func.most_recurrent_player(file_path).lower()
+            df2 = pd.read_excel(context_path)
+            df2['Player'] = df2['Player'].str.lower()  # Convert 'Player' column to lowercase for comparison
+
+            for index, row in df.iterrows():
+                if row['Sub-Type'] == 'NOT_VALID':
+                    df.at[index, 'Sub-Type'] = most_recurrent
+
+                    # Locate the row in df2 where the player matches most_recurrent
+                    player_row = df2[df2['Player'].str.lower() == most_recurrent]
+                    if not player_row.empty:
+                        df.at[index, 'Buyer (optional)'] = player_row['Can they buy the solution?'].values[0]
+                        df.at[index, 'Target'] = 'TRUE' if player_row['Is Target'].values[0] == 'YES' else 'FALSE'
+                        df.at[index, 'Influencer (optional)'] = \
+                        player_row['Can they influence the buying decision?'].values[0]
+                    else:
+                        print(f"No matching player found for {most_recurrent} in the context data.")
+
+
         df.rename(columns={'Company / Account': 'Company'}, inplace=True)
         df.to_excel('../HTML/uploaded/output.xlsx', index=False)
 
