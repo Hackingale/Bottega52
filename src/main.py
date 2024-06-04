@@ -88,7 +88,7 @@ if __name__ == '__main__':
                             df)  # Company name, number of employees, Buyer, Influencer, Target
     start = time.time()
 
-    scr.web_scraper('../HTML/uploaded/InputData.xlsx', 1)  # create a dictionary < company, text / 'null' >
+    scr.web_scraper('../HTML/uploaded/InputData.xlsx', 10)  # create a dictionary < company, text / 'null' >
     companies = scr.extracted_values
     company_keys = list(companies.keys())
     f.print_elapsed_time(start)
