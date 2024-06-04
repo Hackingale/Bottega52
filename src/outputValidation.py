@@ -47,7 +47,7 @@ def compute_correctness(to_test, reference, keys_header, to_exclude):
             total += len(values_reference) - 1
             if 'NOT_VALID' in values_reference:
                 correct += len(values_reference) - 1
-            else:
+            elif len(values) == len(values_reference):
                 for i in range(0, len(values_reference)):
                     if values[i] == values_reference[i]:
                         correct += 1

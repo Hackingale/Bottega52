@@ -11,6 +11,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import spacy
+from sumy.parsers.plaintext import PlaintextParser
 from textblob import TextBlob
 
 from deep_translator import GoogleTranslator
@@ -165,25 +166,24 @@ def count_sentences(text):
 def summarize_text(url, lan, num_sentences):
     text = ''
     try:
-        # Parse the document
-        parser = HtmlParser.from_url(url, Tokenizer(lan))
-        document = parser.document
-        full_text = " ".join([str(sentence) for sentence in document.sentences])
+        # summarize an html text with sumy
+        response = requests.get(url, timeout=10)
+        if response.status_code != 200:
+            return None
+        soup = BeautifulSoup(response.content, 'html.parser')
+        for data in soup(['style', 'script']):
+            # Remove tags
+            data.decompose()
 
-        # Check the number of sentences in the extracted text
-        total_sentences = count_sentences(full_text)
-        if total_sentences < num_sentences:
-            return full_text  # Do not summarize if there are not enough sentences
+            # return data by retrieving the tag content
+        soup = ' '.join(soup.stripped_strings)
 
-        # Proceed with summarization if enough sentences are available
+        parser = PlaintextParser.from_string(soup, Tokenizer(lan))
         stemmer = Stemmer(lan)
         summarizer = Summarizer(stemmer)
         summarizer.stop_words = get_stop_words(lan)
-        for sentence in summarizer(document, num_sentences):
-            text += str(sentence) + "\n"
-
-        if not contains_common_sense_phrases(text):
-            return None
+        for sentence in summarizer(parser.document, num_sentences):
+            text += str(sentence) + '. '
 
     except Exception as e:
         # Optionally print or log the error
@@ -351,3 +351,6 @@ def print_elapsed_time(start):
         minutes = int(elapsed_time // 60)
         seconds = int(elapsed_time % 60)
         print(f"Elapsed time: {minutes}:{seconds:02d} mins")
+
+
+summarize_text('https://www.lagardere.com', 'english', 3)

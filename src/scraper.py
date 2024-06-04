@@ -100,7 +100,18 @@ def clear_scrape(company_url, company_name):
             ret = ''
 
             extracted = f.summarize_text(url, 'english', 12)
-            translation = f.translate_text(extracted, 'en')
+            if extracted is not None and len(extracted) > 5000:
+                extracted = extracted[:4999]
+
+            try:
+                translation = f.translate_text(extracted, 'en')
+            except Exception as e:
+                translation = extracted
+                try:
+                    translation = f.translate_text(translation, 'en')
+                except Exception as e:
+                    translation = extracted
+
             ret = translation
             links = None
             '''
@@ -157,19 +168,40 @@ def unclear_scrape(company_url, company_name):
             else:
                 if len(extracted) > 5000:
                     extracted = extracted[:4999]
-                translation = f.translate_text(extracted, 'en')
+                try:
+                    translation = f.translate_text(extracted, 'en')
+                except Exception as e:
+                    translation = extracted
+                    try:
+                        translation = f.translate_text(translation, 'en')
+                    except Exception as e:
+                        translation = extracted
                 extracted_values[company_name.lower()] = translation
                 return 0
         else:
             if len(extracted) > 5000:
                 extracted = extracted[:4999]
-            translation = f.translate_text(extracted, 'en')
+            try:
+                translation = f.translate_text(extracted, 'en')
+            except Exception as e:
+                translation = extracted
+                try:
+                    translation = f.translate_text(translation, 'en')
+                except Exception as e:
+                    translation = extracted
             extracted_values[company_name.lower()] = translation
             return 0
     else:
         if len(extracted) > 5000:
             extracted = extracted[:4999]
-        translation = f.translate_text(extracted, 'en')
+        try:
+            translation = f.translate_text(extracted, 'en')
+        except Exception as e:
+            translation = extracted
+            try:
+                translation = f.translate_text(translation, 'en')
+            except Exception as e:
+                translation = extracted
         extracted_values[company_name.lower()] = translation
         return 0
 

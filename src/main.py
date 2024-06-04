@@ -10,7 +10,7 @@ from HTML import fileupload
 from multiprocessing import Process
 import src.outputValidation as oV
 
-TEMP = 0.19
+TEMP = 0.1
 
 def send_output_file(file_path):
     url = 'http://127.0.0.1:5000/provide_output'
