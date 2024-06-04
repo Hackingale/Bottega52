@@ -90,6 +90,9 @@ def clear_scrape(company_url, company_name):
     if len(domains) == 0:
         return 1
     else:
+        if len(domains) > 5:
+            # take the first five domains
+            domains = domains[:5]
         for domain in domains:
             # here the function should iter over the domains and for each domain scrape the text
             # and scrape the text of the links in the first level of the website
@@ -330,7 +333,7 @@ def status_code_ok(response, extracted_values, company_name):
 
 
 def fetch_wikipedia_page(url):
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     response.raise_for_status()
     return response.content
 
@@ -438,3 +441,4 @@ for com in extracted_values.keys():
         print(count)
         count+=1
 '''
+
