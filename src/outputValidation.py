@@ -49,8 +49,12 @@ def compute_correctness(to_test, reference, keys_header, to_exclude):
                 correct += len(values_reference) - 1
             elif len(values) == len(values_reference):
                 for i in range(0, len(values_reference)):
-                    if values[i] == values_reference[i]:
-                        correct += 1
+                    if values[i] is str and values_reference[i] is str:
+                        if values[i].lower() == values_reference[i].lower():
+                            correct += 1
+                    else:
+                        if values[i] == values_reference[i]:
+                            correct += 1
             else:
                 # print the values of the player for which the number of fields is different from the reference
                 print('The number of fields for the player ' + player + ' is different from the reference' + 'the fields are for player ' + str(values) + ' and for the reference ' + str(values_reference))
