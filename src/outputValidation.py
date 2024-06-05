@@ -49,7 +49,8 @@ def compute_correctness(to_test, reference, keys_header, to_exclude):
                 correct += len(values_reference) - 1
             elif len(values) == len(values_reference):
                 for i in range(0, len(values_reference)):
-                    if values[i] is str and values_reference[i] is str:
+                    reference_value = values_reference[i]
+                    if isinstance(values[i], str) and isinstance(values_reference[i], str):
                         if values[i].lower() == values_reference[i].lower():
                             correct += 1
                     else:
