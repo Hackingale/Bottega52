@@ -120,7 +120,7 @@ def check_output_provided():
     global output_provided, precision, test_set_uploaded
     response = {"output_provided": output_provided}
     if test_set_uploaded and precision is not None:
-        response["precision"] = precision
+        response["precision"] = round(precision, 2)
     return jsonify(response)
 
 @app.route('/download_output', methods=['GET'])
@@ -141,7 +141,7 @@ def provide_precision():
     if 'precision' not in data:
         return jsonify({"error": "Invalid payload"}), 400
 
-    precision = data['precision']
+    precision = round(data['precision'], 2)
     return jsonify({"precision": precision})
 
 if __name__ == "__main__":

@@ -98,10 +98,7 @@ def create_json_with_website_data(company_names, output_file):
 
 
 # most recurrent player in column Sub-type of the dataframe of the input excel file different from NOT_VALID
-def most_recurrent_player(input_file):
-    # Read the Excel file into a DataFrame
-    df = pd.read_excel(input_file)
-
+def most_recurrent_player(df):
     # Filter out rows where 'Sub-Type' is 'NOT_VALID'
     df = df[df['Sub-Type'] != 'NOT_VALID']
 

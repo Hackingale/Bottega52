@@ -78,7 +78,7 @@ class ConversationHandler:
         number_of_companies = self.message_queue.qsize()
         while self.message_queue.qsize() > 0:
             with self.model.chat_session() as session:
-                for i in range(0, 12):
+                for i in range(0, 10):
                             if(i == 0):
                                 print('restart window\n')
                                 prompt = ("I'll give you a list of Players. Please remember them because they're crucial; "
@@ -140,27 +140,28 @@ class ConversationHandler:
                 df.at[index, 'Influencer (optional)'] = 'NO'
 
         # Check if the file exists
-        file_path = '../HTML/uploaded/TestSetData.xlsx'
         context_path = '../HTML/uploaded/ContextData.xlsx'
 
-        if os.path.isfile(file_path):
-            most_recurrent = func.most_recurrent_player(file_path).lower()
-            df2 = pd.read_excel(context_path)
-            df2['Player'] = df2['Player'].str.lower()  # Convert 'Player' column to lowercase for comparison
+        # Take the most common category from the file we have generated
+        # and assign it to the companies that have been marked as 'NOT_VALID'
 
-            for index, row in df.iterrows():
-                if row['Sub-Type'] == 'NOT_VALID':
-                    df.at[index, 'Sub-Type'] = most_recurrent
+        most_recurrent = func.most_recurrent_player(df).lower()
+        df2 = pd.read_excel(context_path)
+        df2['Player'] = df2['Player'].str.lower()  # Convert 'Player' column to lowercase for comparison
 
-                    # Locate the row in df2 where the player matches most_recurrent
-                    player_row = df2[df2['Player'].str.lower() == most_recurrent]
-                    if not player_row.empty:
-                        df.at[index, 'Buyer (optional)'] = player_row['Can they buy the solution?'].values[0]
-                        df.at[index, 'Target'] = 'TRUE' if player_row['Is Target'].values[0] == 'YES' else 'FALSE'
-                        df.at[index, 'Influencer (optional)'] = \
-                        player_row['Can they influence the buying decision?'].values[0]
-                    else:
-                        print(f"No matching player found for {most_recurrent} in the context data.")
+        for index, row in df.iterrows():
+            if row['Sub-Type'] == 'NOT_VALID':
+                df.at[index, 'Sub-Type'] = most_recurrent
+
+                # Locate the row in df2 where the player matches most_recurrent
+                player_row = df2[df2['Player'].str.lower() == most_recurrent]
+                if not player_row.empty:
+                    df.at[index, 'Buyer (optional)'] = player_row['Can they buy the solution?'].values[0]
+                    df.at[index, 'Target'] = 'TRUE' if player_row['Is Target'].values[0] == 'YES' else 'FALSE'
+                    df.at[index, 'Influencer (optional)'] = \
+                    player_row['Can they influence the buying decision?'].values[0]
+                else:
+                    print(f"No matching player found for {most_recurrent} in the context data.")
 
 
         df.rename(columns={'Company / Account': 'Company'}, inplace=True)
@@ -181,7 +182,7 @@ class ConversationHandler:
             description = companies.get(company)
             if (description is None or description == ''):
                 continue
-            prompt = company + '*Perfect! Answer with only one word by telling me just the category of this Company based on the context file I gave you. It is mandatory to put the answer you find between ** and **. Now answer company name: ' + company + ', using this description: ' + description + 'and as a rule mind that if you find the player in the description it is probably the right player to choose and the right answer to give'
+            prompt = company + '*Perfect! Answer with only one word by telling me just the category of this Company based on the context file I gave you. Your answer MUST be a player inside the context file. It is mandatory to put the answer you find between ** and **. Now answer company name: ' + company + ', using this description: ' + description + 'and as a rule mind that if you find the player in the description it is probably the right player to choose and the right answer to give'
             if (prompt == "exit"):
                 break
             self.send_input(prompt)
