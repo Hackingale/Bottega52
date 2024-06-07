@@ -347,14 +347,16 @@ def find_all_list_item_links(content_div):
     return links
 
 
-def scrape_wikipedia_paragraphs_from_list(links):
+def scrape_wikipedia_paragraphs_from_list(links, depth):
     paragraphs = []
     for link in links:
-        paragraphs.append(scrape_wikipedia_paragraphs(link))
+        paragraphs.append(scrape_wikipedia_paragraphs(link, depth))
     return paragraphs
 
 
-def scrape_wikipedia_paragraphs(url):
+def scrape_wikipedia_paragraphs(url, depth):
+    if depth > 2:
+        return []
     content = fetch_wikipedia_page(url)
     soup = BeautifulSoup(content, 'html.parser')
 
@@ -377,7 +379,9 @@ def scrape_wikipedia_paragraphs(url):
             if is_disambiguation:
                 links = find_all_list_item_links(content_div)
                 if links:
-                    return scrape_wikipedia_paragraphs_from_list(links)
+                    # take first 3 links
+                    links = links[:3]
+                    return scrape_wikipedia_paragraphs_from_list(links, depth + 1)
         elif child.name and child.name.startswith('h'):
             break
 
@@ -395,7 +399,7 @@ def take_longest_paragraph(paragraphs):
 def wikipedia_scrape(company_name):
     paragraphs = ''
     try:
-        paragraphs = scrape_wikipedia_paragraphs('https://en.wikipedia.org/wiki/' + company_name)
+        paragraphs = scrape_wikipedia_paragraphs('https://en.wikipedia.org/wiki/' + company_name, 1)
         paragraphs = take_longest_paragraph(paragraphs)
         paragraphs = clean_text(paragraphs)
     except Exception as e:
