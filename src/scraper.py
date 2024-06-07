@@ -278,13 +278,13 @@ def scrape(df):
 
         # remove spaces at the end of the word in case there are any
         name = name.rstrip()
-        company_name = name
-
-        original_name = name
+        company_name = name.lower()
 
         # company already found
-        if name in extracted_values.keys():
+        if company_name in extracted_values.keys():
             continue
+        else:
+            extracted_values[company_name] = None
 
         flag = 0
 
@@ -303,13 +303,13 @@ def scrape(df):
             cleaned_domain = domain_cleaning(email)
 
         if flag == 1:
-            if wikipedia_scrape(original_name) == 1:
-                if clear_scrape(company_url, company_name.lower()) == 1:
-                    unclear_scrape(company_url, company_name.lower())
-            print("Scraped: " + original_name)
+            if wikipedia_scrape(company_name) == 1:
+                if clear_scrape(company_url, company_name) == 1:
+                    unclear_scrape(company_url, company_name)
+            print("Scraped: " + company_name)
         elif flag == 2:
-            if clear_scrape(cleaned_domain, company_name.lower()) == 1:
-                unclear_scrape(cleaned_domain, company_name.lower())
+            if clear_scrape(cleaned_domain, company_name) == 1:
+                unclear_scrape(cleaned_domain, company_name)
             print("Scraped: " + cleaned_domain)
         else:
             print("Error: Company name and email are both null " + company_name)
@@ -432,13 +432,4 @@ def test_multithreaded_scrape():
 
 
 ############ TEST FUNCTIONS END ############
-
-'''
-count=0
-web_scraper('../HTML/uploaded/InputData.xlsx', 2)
-for com in extracted_values.keys():
-    if extracted_values[com] is not None and extracted_values[com] != '' and len(extracted_values[com]) > 0:
-        print(count)
-        count+=1
-'''
 
