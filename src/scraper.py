@@ -71,8 +71,9 @@ taking advantage of Clearbit to get possible domains of the company
 '''
 
 
-def clear_scrape(company_url, company_name):
-    url = 'https://autocomplete.clearbit.com/v1/companies/suggest?query={' + company_url + '}'
+def clear_scrape(company_name):
+
+    url = 'https://autocomplete.clearbit.com/v1/companies/suggest?query={' + company_name + '}'
     try:
         # Send a GET request to the ClearBit API with a timeout of 5 seconds
         response = requests.get(url, timeout=5)
@@ -151,19 +152,19 @@ Function to scrape the web page and extract the text content from the HTML
 """
 
 
-def unclear_scrape(company_url, company_name):
+def unclear_scrape( company_name):
 
     # try spain first
-    url = 'https://www.' + company_url + '.es'  # Replace example.com with your base URL
+    url = 'https://www.' + company_name + '.es'  # Replace example.com with your base URL
     extracted = f.summarize_text(url, 'spanish', 15)
 
     if extracted is None:
         # try italian
-        url = 'https://www.' + company_url + '.it'
+        url = 'https://www.' + company_name + '.it'
         extracted = f.summarize_text(url, 'italian', 15)
         if extracted is None:
             # try english
-            url = 'https://www.' + company_url + '.com'
+            url = 'https://www.' + company_name + '.com'
             extracted = f.summarize_text(url, 'english', 15)
             if extracted is None:
                 extracted_values[company_name] = None
@@ -280,36 +281,34 @@ def scrape(df):
         name = name.rstrip()
         company_name = name.lower()
 
-        # company already found
-        if company_name in extracted_values.keys():
-            continue
-        else:
-            extracted_values[company_name] = None
-
         flag = 0
 
+        # IF THE CONTACT HAS A VALID NAME
         if pd.notnull(name) and name != '' and len(name) > 0:  # Check if company name is not null
             flag = 1
 
-            # clean the name removing accents and special characters
-            company_url = company_name_cleaning(name)
-
         # DOMAIN CLEANING
-        # else check if email is not null
+        # ELSE USE THE CONTACT'S EMAIL
         elif pd.notnull(email) and email != '' and len(email) > 0:
             flag = 2
 
             # takes only the domain part
             cleaned_domain = domain_cleaning(email)
 
+        if company_name in extracted_values.keys() and flag == 1 or flag == 2 and cleaned_domain in extracted_values.keys():
+            continue
+        else:
+            extracted_values[company_name] = None
+
+        # if the contact has a valid company_name
         if flag == 1:
             if wikipedia_scrape(company_name) == 1:
-                if clear_scrape(company_url, company_name) == 1:
-                    unclear_scrape(company_url, company_name)
+                if clear_scrape(company_name) == 1:
+                    unclear_scrape(company_name)
             print("Scraped: " + company_name)
         elif flag == 2:
-            if clear_scrape(cleaned_domain, company_name) == 1:
-                unclear_scrape(cleaned_domain, company_name)
+            if clear_scrape(cleaned_domain) == 1:
+                unclear_scrape(cleaned_domain)
             print("Scraped: " + cleaned_domain)
         else:
             print("Error: Company name and email are both null " + company_name)
@@ -361,15 +360,23 @@ def scrape_wikipedia_paragraphs(url):
 
     content_div = soup.find('div', class_='mw-content-ltr mw-parser-output')
 
+    is_disambiguation = False
+
+    # Check for the disambiguation notice
+    disambig_notice = soup.find('div', id='mw-normal-catlinks')
+    if disambig_notice and 'disambiguation' in disambig_notice.text.lower():
+        is_disambiguation = True
+    else:
+        is_disambiguation = False
+
     paragraphs = []
 
     for child in content_div.children:
         if child.name == 'p':
             paragraphs.append(child.get_text())
-            if 'may refer to' in child.get_text():
+            if is_disambiguation:
                 links = find_all_list_item_links(content_div)
                 if links:
-                    paragraphs.append("\nFollowing links found:\n" + "\n".join(links))
                     return scrape_wikipedia_paragraphs_from_list(links)
         elif child.name and child.name.startswith('h'):
             break
@@ -396,6 +403,25 @@ def wikipedia_scrape(company_name):
         return 1
     extracted_values[company_name.lower()] = paragraphs
     return 0
+
+def is_disambiguation_page(url):
+    try:
+        # Fetch the content of the page
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an error on a bad status
+
+        # Parse the HTML content of the page
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Check for the disambiguation notice
+        disambig_notice = soup.find('div', id='mw-normal-catlinks')
+        if disambig_notice and 'disambiguation' in disambig_notice.text.lower():
+            return True
+        else:
+            return False
+    except requests.RequestException as e:
+        print(f"Error fetching page: {e}")
+        return None
 
 
 def clean_text(text):
@@ -432,4 +458,3 @@ def test_multithreaded_scrape():
 
 
 ############ TEST FUNCTIONS END ############
-
