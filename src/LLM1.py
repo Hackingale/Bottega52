@@ -100,7 +100,7 @@ class ConversationHandler:
                             message = message[asterisk_index+1:]
                             company = company.replace('*', '')
                             answer = self.model.generate(message, max_tokens=10, temp=TEMP)
-                            print('answer: ' + answer)
+                            print('answer: ' + answer + '\n')
                             answer = self.parse_category(answer)
                             if(answer is not None ):
                                 dict[company] = answer # self.parse_category(answer)
@@ -110,6 +110,7 @@ class ConversationHandler:
                             self.progress += 1
                             requests.post('http://127.0.0.1:5000/increment_counter')
                             print('Progress: ' + str(self.progress) + ' of ' + str(number_of_companies) + '\n')
+                            print('\n \n')
                             if self.stop or (self.message_queue.qsize() == 0):
                                 break
         f.print_elapsed_time(start)

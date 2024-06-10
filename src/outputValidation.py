@@ -67,4 +67,4 @@ def validate_output(to_test, reference, keys_header, to_exclude):
 
 
 # print(valid_format(pd.read_excel('../HTML/uploaded/Output.xlsx'), pd.read_excel('../HTML/uploaded/TestSet.xlsx')))
-print(compute_correctness(pd.read_excel('../HTML/uploaded/TestSetData.xlsx'), pd.read_excel('../HTML/uploaded/TestSetData.xlsx'),'Company' , ['Website ok (optional)']))
+# print(compute_correctness(pd.read_excel('../HTML/uploaded/TestSetData.xlsx'), pd.read_excel('../HTML/uploaded/TestSetData.xlsx'),'Company' , ['Website ok (optional)']))
