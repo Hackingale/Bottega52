@@ -29,21 +29,25 @@ This project leverages a Large Language Model (LLM) to automate the identificati
    ```sh
    git clone https://github.com/yourusername/automated-market-analysis.git
    cd automated-market-analysis
-2. install the required dependencies: pip install -r requirements.txt
+2. install the required dependencies:
+   ```sh
+   pip install -r requirements.txt
 
-##Runnin the application 
+## Running the application 
 1. Start the application by running the main script: pyhton main.py
-2. open your web brwser and connect to the default address:
-http://127.0.0.1:5000
+2. Open your web browser and connect to the default address:
+   ```sh
+	http://127.0.0.1:5000
 
-## To use the application, upload the following files:
+## Using the Application:
+To use the application, upload the following files
 
 	•	List of Companies: A CSV file containing the list of companies to be classified.
 	•	LLM (Optional): The large language model file.
 	•	Test Set File (Optional): A file to compare the results and validate the model’s performance.
 	•	Context File: A file describing the roles of the agents in the market.
 
-What the Application Does
+## What the Application Does
 
 The application automates the process of market analysis by:
 
@@ -53,11 +57,11 @@ The application automates the process of market analysis by:
 
 By automating these tasks, the application helps businesses gain valuable insights with minimal manual intervention, thereby enhancing strategic decision-making and competitiveness.
 
-License
+## License
 
 This project is licensed under the MIT License.
 
-Acknowledgments
+## Acknowledgments
 
 Special thanks to all contributors and supporters of this project.
 
